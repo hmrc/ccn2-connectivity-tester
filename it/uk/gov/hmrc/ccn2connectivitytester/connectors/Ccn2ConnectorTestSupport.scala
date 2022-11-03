@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.config
+package uk.gov.hmrc.ccn2connectivitytester.connectors
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import com.github.tomakehurst.wiremock.client.WireMock._
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
+trait Ccn2ConnectorTestSupport  {
 
-  val appName: String = config.get[String]("appName")
-//  val outboundSoapUri: String = config.get[String]("microservice.services.api-platform-outbound-soap.host")
-  val outboundSoapUri: String = "http://microservice.services.api-platform-outbound-soap.host"
+  def setupPostForCCNWithResponseBody(path: String, desiredStatus: Int, desiredResponse: String) = {
+    stubFor(
+      post(urlEqualTo(path))
+        .willReturn(aResponse().withStatus(desiredStatus).withBody(desiredResponse))
+    )
+  }
+def setupPostForCCN(path: String, desiredStatus: Int) = {
+    stubFor(
+      post(urlEqualTo(path))
+        .willReturn(aResponse().withStatus(desiredStatus))
+    )
+  }
 
 }

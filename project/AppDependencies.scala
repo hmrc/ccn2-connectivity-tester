@@ -16,5 +16,7 @@ object AppDependencies {
   val test = Seq(
     "uk.gov.hmrc"             %% "bootstrap-test-play-28"     % bootstrapVersion            % "test, it",
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % hmrcMongoVersion            % Test,
+    "com.github.tomakehurst"  %  "wiremock-jre8-standalone"   % "2.34.0"                    % "it"
+
   )
 }
