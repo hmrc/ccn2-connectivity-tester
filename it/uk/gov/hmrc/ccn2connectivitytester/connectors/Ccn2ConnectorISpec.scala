@@ -26,6 +26,7 @@ import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SuccessResult}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
@@ -33,7 +34,7 @@ class Ccn2ConnectorISpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
   with IntegrationPatience
-  with GuiceOneServerPerSuite with WireMockSupport with Ccn2ConnectorTestSupport {
+  with GuiceOneServerPerSuite with WireMockSupport with WiremockTestSupport {
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
@@ -53,19 +54,33 @@ class Ccn2ConnectorISpec extends AnyWordSpec
         s"""{
           |"globalId":"${UUID.randomUUID()}",
           |"messageId": "${UUID.randomUUID()}",
-          |"status" : 200,
+          |"status" : "SENT",
           |"ccnHttpStatus" : 202
           |}
           |""".stripMargin
       setupPostForCCNWithResponseBody("/message", 200, successResponse)
       val response = await(underTest.sendRequest("v1", wireMockUrl))
-      response shouldBe Status.OK
+      response shouldBe SuccessResult
+    }
+
+    "handleRetrying" in new Setup {
+      val retryingResponse =
+        s"""{
+          |"globalId":"${UUID.randomUUID()}",
+          |"messageId": "${UUID.randomUUID()}",
+          |"status" : "RETRYING",
+          |"ccnHttpStatus" : 301
+          |}
+          |""".stripMargin
+      setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
+      val response = await(underTest.sendRequest("v1", wireMockUrl))
+      response shouldBe SuccessResult
     }
 
     "handleNotFound" in new Setup {
       setupPostForCCN("/message", 404)
       val response = await(underTest.sendRequest("v1", wireMockUrl))
-      response shouldBe Status.NOT_FOUND
+      response shouldBe FailResult
     }
 
   }

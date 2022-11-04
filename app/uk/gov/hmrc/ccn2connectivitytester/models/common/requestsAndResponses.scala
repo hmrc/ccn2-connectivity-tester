@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.connectors
+package uk.gov.hmrc.ccn2connectivitytester.models.common
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+sealed trait SendResult
 
-trait Ccn2ConnectorTestSupport  {
+case object SuccessResult extends SendResult
 
-  def setupPostForCCNWithResponseBody(path: String, desiredStatus: Int, desiredResponse: String) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus).withBody(desiredResponse))
-    )
-  }
-def setupPostForCCN(path: String, desiredStatus: Int) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus))
-    )
-  }
+case object FailResult extends SendResult
 
-}
+

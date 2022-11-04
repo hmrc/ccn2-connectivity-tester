@@ -22,8 +22,11 @@ import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
+import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SendResult, SuccessResult}
+import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,26 +58,34 @@ private val v2Request =
     |}
     """.stripMargin
 
-  def sendRequest(version: String, destinationUrl: String)(implicit hc: HeaderCarrier ): Future[Int] =  {
+  def sendRequest(version: String, destinationUrl: String)(implicit hc: HeaderCarrier ): Future[SendResult] =  {
    sendVersion1Request(destinationUrl).map {
      case Left(UpstreamErrorResponse(_, statusCode, _, _)) =>
-       logger.warn("requestLogMessage(statusCode)")
-       statusCode
-     case Right(response: HttpResponse) =>
-       response.status
+       logger.warn(s"The request was not sent. The service returned $statusCode")
+       FailResult
+     case Right(response: SoapMessageStatus) =>
+       logger.info(s"Status is ${response.status}")
+       SuccessResult
     }
      .recoverWith {
      case NonFatal(e) =>
        logger.warn (s"Unable to send request to CCN2: ${e.getMessage}")
-       Future.successful(Status.INTERNAL_SERVER_ERROR)
+       Future.successful(FailResult)
    }
   }
 
-  private def sendVersion1Request(destinationUrl: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HttpResponse]] = {
-    http.POSTString[Either[UpstreamErrorResponse, HttpResponse]](new URL(s"$destinationUrl/message"), v1Request)
+  /*private def getStatusFromResponse(response: JsValue) = {
+    response \ "status" match {
+      case "SENT" =>
+    }
+
+  }*/
+
+  private def sendVersion1Request(destinationUrl: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
+    http.POSTString[Either[UpstreamErrorResponse, SoapMessageStatus]](new URL(s"$destinationUrl/message"), v1Request)
   }
 
-  private def sendVersion2Request(destinationUrl: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HttpResponse]] = {
-    http.POSTString[Either[UpstreamErrorResponse, HttpResponse]](new URL(s"$destinationUrl/message"), v2Request)
+  private def sendVersion2Request(destinationUrl: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
+    http.POSTString[Either[UpstreamErrorResponse, SoapMessageStatus]](new URL(s"$destinationUrl/message"), v2Request)
   }
 }
