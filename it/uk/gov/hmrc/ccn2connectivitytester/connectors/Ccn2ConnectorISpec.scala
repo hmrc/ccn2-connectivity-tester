@@ -26,7 +26,7 @@ import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SuccessResult}
+import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SuccessResult, Version}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
@@ -48,41 +48,61 @@ class Ccn2ConnectorISpec extends AnyWordSpec
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }
 
-  "postV1Message" should {
-    "handleSuccess" in new Setup {
-      val successResponse =
-        s"""{
-          |"globalId":"${UUID.randomUUID()}",
-          |"messageId": "${UUID.randomUUID()}",
-          |"status" : "SENT",
-          |"ccnHttpStatus" : 202
-          |}
-          |""".stripMargin
-      setupPostForCCNWithResponseBody("/message", 200, successResponse)
-      val response = await(underTest.sendRequest("v1", wireMockUrl))
-      response shouldBe SuccessResult
+  "postMessage" should {
+    Seq(Version.V1, Version.V2) foreach { version =>
+      s"handleSuccess for $version messages" in new Setup {
+        val successResponse =
+          s"""{
+            |"globalId":"${UUID.randomUUID()}",
+            |"messageId": "${UUID.randomUUID()}",
+            |"status" : "SENT",
+            |"ccnHttpStatus" : 202
+            |}
+            |""".stripMargin
+        setupPostForCCNWithResponseBody("/message", 200, successResponse)
+        val response = await(underTest.sendRequest(version, wireMockUrl))
+        response shouldBe SuccessResult
+      }
     }
 
-    "handleRetrying" in new Setup {
-      val retryingResponse =
-        s"""{
-          |"globalId":"${UUID.randomUUID()}",
-          |"messageId": "${UUID.randomUUID()}",
-          |"status" : "RETRYING",
-          |"ccnHttpStatus" : 301
-          |}
-          |""".stripMargin
-      setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
-      val response = await(underTest.sendRequest("v1", wireMockUrl))
-      response shouldBe SuccessResult
+    Seq(Version.V1, Version.V2) foreach { version =>
+      s"handleRetrying for $version messages" in new Setup {
+        val retryingResponse =
+          s"""{
+            |"globalId":"${UUID.randomUUID()}",
+            |"messageId": "${UUID.randomUUID()}",
+            |"status" : "RETRYING",
+            |"ccnHttpStatus" : 301
+            |}
+            |""".stripMargin
+        setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
+        val response = await(underTest.sendRequest(version, wireMockUrl))
+        response shouldBe FailResult
+      }
     }
 
-    "handleNotFound" in new Setup {
-      setupPostForCCN("/message", 404)
-      val response = await(underTest.sendRequest("v1", wireMockUrl))
-      response shouldBe FailResult
+    Seq(Version.V1, Version.V2) foreach { version =>
+      s"handleFailed for $version messages" in new Setup {
+        val failResponse =
+          s"""{
+            |"globalId":"${UUID.randomUUID()}",
+            |"messageId": "${UUID.randomUUID()}",
+            |"status" : "FAILED",
+            |"ccnHttpStatus" : 500
+            |}
+            |""".stripMargin
+        setupPostForCCNWithResponseBody("/message", 200, failResponse)
+        val response = await(underTest.sendRequest(version, wireMockUrl))
+        response shouldBe FailResult
+      }
     }
 
+    Seq(Version.V1, Version.V2) foreach { version =>
+      s"handleNotFound for $version messages" in new Setup {
+        setupPostForCCN("/message", 404)
+        val response = await(underTest.sendRequest(version, wireMockUrl))
+        response shouldBe FailResult
+      }
+    }
   }
-
 }
