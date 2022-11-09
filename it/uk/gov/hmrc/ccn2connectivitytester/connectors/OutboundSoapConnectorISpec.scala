@@ -30,7 +30,7 @@ import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SuccessResu
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
-class Ccn2ConnectorISpec extends AnyWordSpec
+class OutboundSoapConnectorISpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
   with IntegrationPatience
@@ -43,7 +43,7 @@ class Ccn2ConnectorISpec extends AnyWordSpec
       .build()
 
   trait Setup {
-    val underTest: Ccn2Connector = app.injector.instanceOf[Ccn2Connector]
+    val underTest: OutboundSoapConnector = app.injector.instanceOf[OutboundSoapConnector]
     val messageId = "messageId"
     implicit val hc: HeaderCarrier = HeaderCarrier()
   }

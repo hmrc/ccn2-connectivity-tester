@@ -21,6 +21,7 @@ import java.time.Instant
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
+import play.api.http.HeaderNames.CONTENT_TYPE
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SendResult, SuccessResult, Version}
@@ -30,7 +31,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class Ccn2Connector @Inject()(val config: AppConfig, val http: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class OutboundSoapConnector @Inject()(val config: AppConfig, val http: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+
   val v1Request =
     s"""
        |{"wsdlUrl":"https://import-control-wsdls.protected.mdtp/assets/eu/outbound/CR-for-NES-Services/BusinessActivityService/ICS/RiskAnalysisOrchestrationBAS/V1/CCN2.Service.Customs.Default.ICS.RiskAnalysisOrchestrationBAS_1.0.0_CCN2_1.0.0.wsdl",
@@ -55,7 +57,8 @@ class Ccn2Connector @Inject()(val config: AppConfig, val http: HttpClient)(impli
        |}
     """.stripMargin
 
-  def sendRequest(version: Version, destinationUrl: String)(implicit hc: HeaderCarrier): Future[SendResult] = {
+  def sendRequest(version: Version, destinationUrl: String): Future[SendResult] = {
+    implicit val hc: HeaderCarrier = HeaderCarrier().withExtraHeaders(CONTENT_TYPE -> "application/json")
 
     def handleErrorResponse(statusCode: Int) = {
       logger.warn(s"The request was not sent. The service returned $statusCode")
