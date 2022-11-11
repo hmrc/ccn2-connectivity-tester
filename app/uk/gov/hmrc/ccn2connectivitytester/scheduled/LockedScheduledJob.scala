@@ -26,7 +26,6 @@ import scala.concurrent.{ExecutionContext, Future}
 trait LockedScheduledJob {
   case class Result(message: String)
   def name: String
-  def configKey: String = name
 
   def initialDelay: FiniteDuration
 

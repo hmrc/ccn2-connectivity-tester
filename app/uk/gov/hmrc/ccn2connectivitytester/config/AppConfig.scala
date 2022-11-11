@@ -30,4 +30,5 @@ class AppConfig @Inject()(config: Configuration) {
   val checkInterval: Duration = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
   val checkInitialDelay: Duration = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
   val checkJobLockDuration: Duration = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
+  val proxyRequiredForThisEnvironment = config.getOptional[Boolean]("proxy.proxyRequiredForThisEnvironment").getOrElse(false)
 }

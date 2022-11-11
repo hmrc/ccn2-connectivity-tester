@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.Duration
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V2
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import scala.concurrent.duration.FiniteDuration
@@ -39,6 +39,6 @@ class SendV2SoapMessageJob @Inject()(appConfig: AppConfig, override val lockRepo
   override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
-    outboundSoapConnector.sendRequest(V1, appConfig.outboundSoapUri).map(done => Result(done.toString))
+    outboundSoapConnector.sendRequest(V2, appConfig.outboundSoapUri).map(done => Result(done.toString))
   }
 }

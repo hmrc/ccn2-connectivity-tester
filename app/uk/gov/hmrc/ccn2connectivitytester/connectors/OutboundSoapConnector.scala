@@ -26,12 +26,12 @@ import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SendResult, SuccessResult, Version}
 import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class OutboundSoapConnector @Inject()(val config: AppConfig, val http: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class OutboundSoapConnector @Inject()(appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
 
   val v1Request =
     s"""
@@ -39,7 +39,7 @@ class OutboundSoapConnector @Inject()(val config: AppConfig, val http: HttpClien
        | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
        | "addressing": {
        |  "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
-       |  "messageId":"ISALIVE-${Instant.now()}"
+       |  "messageId":"ISALIVE-${Instant.now().getEpochSecond()}"
        |  }
        |}
     """.stripMargin
@@ -52,7 +52,7 @@ class OutboundSoapConnector @Inject()(val config: AppConfig, val http: HttpClien
        |   "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
        |   "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
        |   "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
-       |   "messageId":"ISALIVE-${Instant.now()}"
+       |   "messageId":"ISALIVE-${Instant.now().getEpochSecond()}"
        | }
        |}
     """.stripMargin
@@ -90,6 +90,6 @@ class OutboundSoapConnector @Inject()(val config: AppConfig, val http: HttpClien
   }
 
   private def sendRequest(destinationUrl: String, request: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
-    http.POSTString[Either[UpstreamErrorResponse, SoapMessageStatus]](new URL(s"$destinationUrl/message"), request)
+    httpClient.POSTString[Either[UpstreamErrorResponse, SoapMessageStatus]](new URL(s"$destinationUrl/message"), request)
   }
 }
