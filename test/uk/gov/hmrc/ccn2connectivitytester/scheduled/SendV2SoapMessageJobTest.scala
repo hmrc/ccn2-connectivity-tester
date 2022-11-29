@@ -25,7 +25,9 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models.common.{SuccessResult, Version}
+import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V2
+import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
@@ -49,20 +51,21 @@ class SendV2SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
     val appConfigMock: AppConfig = mock[AppConfig]
     val outboundSoapConnector: OutboundSoapConnector = mock[OutboundSoapConnector]
     val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
-    val mockOutboundSoapUri: String = "https://dummy.com"
+    val mockOutboundService: OutboundService = mock[OutboundService]
   }
 
-  "SendV1SoapMessageJobTest" should {
+  "SendV2SoapMessageJobTest" should {
     "invoke sending V2 message on OutboundSoapConnector" in new Setup {
-      when(mongoLockRepository.takeLock(*,*,*)).thenReturn(successful(true))
-      when(mongoLockRepository.releaseLock(*,*)).thenReturn(successful(()))
+      when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(true))
+      when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
+      when(mockOutboundService.sendTestMessage(*)).thenReturn(successful(SuccessResult))
 
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
-      when(appConfigMock.outboundSoapUri).thenReturn(mockOutboundSoapUri)
-      when(outboundSoapConnector.sendRequest(Version.V2, mockOutboundSoapUri)) thenReturn (Future(SuccessResult))
-      val underTest = new SendV2SoapMessageJob(appConfigMock, mongoLockRepository, outboundSoapConnector)
+      when(mockOutboundService.sendTestMessage(V2)) thenReturn Future(SuccessResult)
+      val underTest = new SendV2SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
       val result: underTest.Result = await(underTest.execute)
       result.message shouldBe "Job named SendV2SoapMessageJob ran and completed with result SuccessResult"
+      verify(mockOutboundService).sendTestMessage(V2)
     }
   }
 

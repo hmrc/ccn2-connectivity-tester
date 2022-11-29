@@ -16,12 +16,76 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.models
 
+import java.time.Instant
 import java.util.UUID
 
-import play.api.libs.json.{Json, Reads}
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+import play.api.libs.json._
 
-case class SoapMessageStatus(globalId: UUID, messageId: String, status:  String, ccnHttpStatus: Int)
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import scala.collection.immutable
+
+final case class SoapMessageStatus(globalId: UUID, messageId: String, status: SendingStatus, ccnHttpStatus: Int, createDateTime: Instant = Instant.now())
 
 object SoapMessageStatus {
-  implicit val reads: Reads[SoapMessageStatus] = Json.reads[SoapMessageStatus]
+  val reads: Reads[SoapMessageStatus] = {
+
+    import play.api.libs.functional.syntax._
+
+    (
+      (__ \ "globalId").read[UUID] and
+        (__ \ "messageId").read[String] and
+        (__ \ "status").read[SendingStatus] and
+        (__ \ "ccnHttpStatus").read[Int] and
+        (__ \ "createDateTime").read(MongoJavatimeFormats.instantFormat).orElse(Reads.pure(Instant.now()))
+      ) (SoapMessageStatus.apply _)
+  }
+  val writes: OWrites[SoapMessageStatus] = {
+    import play.api.libs.functional.syntax._
+    
+    (
+      (__ \ "globalId").write[UUID] and
+        (__ \ "messageId").write[String] and
+        (__ \ "status").write[SendingStatus] and
+        (__ \ "ccnHttpStatus").write[Int] and
+        (__ \ "createDateTime").write(MongoJavatimeFormats.instantFormat)
+      ) (unlift(SoapMessageStatus.unapply))
+  }
+  implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
+//  implicit val instantFormatter = MongoJavatimeFormats.instantFormat
+}
+
+sealed abstract class StatusType extends EnumEntry
+
+object StatusType extends Enum[StatusType] with PlayJsonEnum[StatusType] {
+  val values: immutable.IndexedSeq[StatusType] = findValues
+}
+
+/*sealed abstract class DeliveryStatus(override val entryName: String) extends StatusType
+
+object DeliveryStatus extends Enum[DeliveryStatus] with PlayJsonEnum[DeliveryStatus] {
+
+  val values: immutable.IndexedSeq[DeliveryStatus] = findValues
+
+  case object COE extends DeliveryStatus("COE")
+
+  case object COD extends DeliveryStatus("COD")
+}*/
+
+sealed abstract class SendingStatus(override val entryName: String) extends StatusType
+
+object SendingStatus extends Enum[SendingStatus] with PlayJsonEnum[SendingStatus] {
+  val values: immutable.IndexedSeq[SendingStatus] = findValues
+
+  case object SENT extends SendingStatus("SENT")
+
+  case object FAILED extends SendingStatus("FAILED")
+
+  case object RETRYING extends SendingStatus("RETRYING")
+
+  case object COE extends SendingStatus("COE")
+
+  case object COD extends SendingStatus("COD")
+
 }

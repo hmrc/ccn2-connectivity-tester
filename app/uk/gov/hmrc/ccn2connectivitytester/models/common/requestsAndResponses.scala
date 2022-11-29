@@ -16,10 +16,57 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.models.common
 
+import java.time.Instant
+
+import javax.inject.Inject
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+
+sealed trait UpdateResult
+
+case object MessageIdNotFoundResult extends UpdateResult
+
+case object UpdateSuccessResult extends UpdateResult
+
+
 sealed trait SendResult
 
 case object SuccessResult extends SendResult
 
 case object FailResult extends SendResult
 
+case object RetryingResult extends SendResult
 
+
+class Requests @Inject()(appConfig: AppConfig) {
+  def getV1Request: String = {
+    val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V1"
+    s"""
+       |{"wsdlUrl":"${appConfig.wsdlUrlForV1}",
+       | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
+       | "addressing": {
+       |  "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
+       |  "from":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
+       |  "replyTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
+       |  "faultTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
+       |  "messageId":"$messageId"
+       |  }
+       |}
+    """.stripMargin
+  }
+
+  def getV2Request: String = {
+    val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V2"
+    s"""
+       |{"wsdlUrl":"${appConfig.wsdlUrlForV2}",
+       | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
+       | "addressing": {
+       |   "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR_V2.CONF",
+       |   "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
+       |   "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
+       |   "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
+       |   "messageId":"$messageId"
+       | }
+       |}
+    """.stripMargin
+  }
+}

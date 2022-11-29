@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import org.joda.time.Duration
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LockedScheduledJob {
@@ -33,7 +31,7 @@ trait LockedScheduledJob {
 
   def executeInLock(implicit ec: ExecutionContext): Future[this.Result]
 
-  val releaseLockAfter: Duration
+  val releaseLockAfter: FiniteDuration
 
   val lockRepository: MongoLockRepository
 

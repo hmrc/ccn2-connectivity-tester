@@ -21,12 +21,13 @@ import java.util.UUID
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.{GuiceOneAppPerSuite, GuiceOneServerPerSuite}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status
+import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, SuccessResult, Version}
+import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Requests
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
@@ -34,7 +35,9 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
   with IntegrationPatience
-  with GuiceOneServerPerSuite with WireMockSupport with WiremockTestSupport {
+  with GuiceOneAppPerSuite with WireMockSupport with WiremockTestSupport {
+  val requests = app.injector.instanceOf[Requests]
+
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
@@ -46,62 +49,84 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
     val underTest: OutboundSoapConnector = app.injector.instanceOf[OutboundSoapConnector]
     val messageId = "messageId"
     implicit val hc: HeaderCarrier = HeaderCarrier()
+    val globalId = UUID.randomUUID()
   }
 
   "postMessage" should {
-    Seq(Version.V1, Version.V2) foreach { version =>
-      s"handleSuccess for $version messages" in new Setup {
+    Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
+      s"handleSuccess for ${version._1} messages" in new Setup {
+        val httpStatus = ACCEPTED
         val successResponse =
           s"""{
-            |"globalId":"${UUID.randomUUID()}",
-            |"messageId": "${UUID.randomUUID()}",
-            |"status" : "SENT",
-            |"ccnHttpStatus" : 202
-            |}
-            |""".stripMargin
+             |"globalId":"$globalId",
+             |"messageId": "$messageId",
+             |"status" : "SENT",
+             |"ccnHttpStatus" : $httpStatus
+             |}
+             |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, successResponse)
-        val response = await(underTest.sendRequest(version, wireMockUrl))
-        response shouldBe SuccessResult
+        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        response.isRight shouldBe true
+        response.map(sms => {
+          sms.messageId shouldBe messageId
+          sms.globalId shouldBe globalId
+          sms.ccnHttpStatus shouldBe httpStatus
+          sms.status shouldBe SendingStatus.SENT
+        })
       }
     }
 
-    Seq(Version.V1, Version.V2) foreach { version =>
-      s"handleRetrying for $version messages" in new Setup {
+    Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
+      s"handleRetrying for ${version._1} messages" in new Setup {
+        val httpStatus = PERMANENT_REDIRECT
         val retryingResponse =
           s"""{
-            |"globalId":"${UUID.randomUUID()}",
-            |"messageId": "${UUID.randomUUID()}",
-            |"status" : "RETRYING",
-            |"ccnHttpStatus" : 301
-            |}
-            |""".stripMargin
+             |"globalId":"$globalId",
+             |"messageId": "$messageId",
+             |"status" : "RETRYING",
+             |"ccnHttpStatus" : $httpStatus
+             |}
+             |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
-        val response = await(underTest.sendRequest(version, wireMockUrl))
-        response shouldBe FailResult
+        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        response.isRight shouldBe true
+        response.map(sms => {
+          sms.messageId shouldBe messageId
+          sms.globalId shouldBe globalId
+          sms.ccnHttpStatus shouldBe httpStatus
+          sms.status shouldBe SendingStatus.RETRYING
+        })
       }
     }
 
-    Seq(Version.V1, Version.V2) foreach { version =>
-      s"handleFailed for $version messages" in new Setup {
+    Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
+      s"handleFailed for ${version._1} messages" in new Setup {
+        val httpStatus = INTERNAL_SERVER_ERROR
         val failResponse =
           s"""{
-            |"globalId":"${UUID.randomUUID()}",
-            |"messageId": "${UUID.randomUUID()}",
-            |"status" : "FAILED",
-            |"ccnHttpStatus" : 500
-            |}
-            |""".stripMargin
+             |"globalId":"$globalId",
+             |"messageId": "$messageId",
+             |"status" : "FAILED",
+             |"ccnHttpStatus" : $httpStatus
+             |}
+             |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, failResponse)
-        val response = await(underTest.sendRequest(version, wireMockUrl))
-        response shouldBe FailResult
+        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        response.isRight shouldBe true
+        response.map(sms => {
+          sms.messageId shouldBe messageId
+          sms.globalId shouldBe globalId
+          sms.ccnHttpStatus shouldBe httpStatus
+          sms.status shouldBe SendingStatus.FAILED
+        })
       }
     }
 
-    Seq(Version.V1, Version.V2) foreach { version =>
+    Seq("V1-request", "V2-request") foreach { version =>
       s"handleNotFound for $version messages" in new Setup {
         setupPostForCCN("/message", 404)
-        val response = await(underTest.sendRequest(version, wireMockUrl))
-        response shouldBe FailResult
+        val response = await(underTest.sendRequestAndProcessResponse(version, wireMockUrl))
+        response.isLeft shouldBe true
       }
     }
   }

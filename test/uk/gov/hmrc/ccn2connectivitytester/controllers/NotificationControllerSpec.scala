@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.connectors
+package uk.gov.hmrc.ccn2connectivitytester.controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.FakeRequest
 
-trait WiremockTestSupport {
+class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
+"message" should {
+  val fakeRequest = FakeRequest("POST", "/acknowledgement")
 
-  def setupPostForCCNWithResponseBody(path: String, desiredStatus: Int, desiredResponse: String) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus).withBody(desiredResponse))
-    )
-  }
+}
 
-  def setupPostForCCN(path: String, desiredStatus: Int) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus))
-    )
-  }
+
 }

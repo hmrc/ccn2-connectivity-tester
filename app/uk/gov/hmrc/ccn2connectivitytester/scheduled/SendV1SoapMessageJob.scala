@@ -17,10 +17,9 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.Duration
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
+import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import scala.concurrent.duration.FiniteDuration
@@ -28,9 +27,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SendV1SoapMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
-                                     outboundSoapConnector: OutboundSoapConnector)
+                                     outboundService: OutboundService)
   extends LockedScheduledJob {
-  override val releaseLockAfter: Duration = Duration.standardSeconds(appConfig.checkJobLockDuration.toSeconds)
+  override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "SendV1SoapMessageJob"
 
@@ -39,6 +38,6 @@ class SendV1SoapMessageJob @Inject()(appConfig: AppConfig, override val lockRepo
   override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
-    outboundSoapConnector.sendRequest(V1, appConfig.outboundSoapUri).map(done => Result(done.toString))
+    outboundService.sendTestMessage(V1).map(done => Result(done.toString))
   }
 }

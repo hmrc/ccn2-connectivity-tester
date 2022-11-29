@@ -16,28 +16,38 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
 import javax.inject.{Inject, Singleton}
+import play.api.Logging
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V2
-import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
+import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SendV2SoapMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
-                                     outboundService: OutboundService)
-  extends LockedScheduledJob {
+class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
+                                       soapMessageStatusRepository: SoapMessageStatusRepository)
+                                      (implicit val ec: ExecutionContext, mat: Materializer)
+
+  extends LockedScheduledJob with Logging {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
-  override def name: String = "SendV2SoapMessageJob"
+  override def name: String = "NotConfirmedMessageJob"
 
   override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
 
   override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
-    outboundService.sendTestMessage(V2).map(done => Result(done.toString))
+    def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
+      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of delivery")
+      Future.unit
+    }
+
+    soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)).map(done => Result("OK"))
   }
 }

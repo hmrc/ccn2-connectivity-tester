@@ -26,9 +26,12 @@ class AppConfig @Inject()(config: Configuration) {
 
   val appName: String = config.get[String]("appName")
   val outboundSoapUri: String = config.get[String]("microservice.services.api-platform-outbound-soap.host")
-
+val wsdlUrlForV1 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
+val wsdlUrlForV2 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
   val checkInterval: Duration = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
   val checkInitialDelay: Duration = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
   val checkJobLockDuration: Duration = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
-  val proxyRequiredForThisEnvironment = config.getOptional[Boolean]("proxy.proxyRequiredForThisEnvironment").getOrElse(false)
+  val confirmationWaitDuration: java.time.Duration = java.time.Duration.parse(config.getOptional[String]("confirmation.wait.duration").getOrElse("PT12H"))
+  val parallelism: Int = config.getOptional[Int]("expired.parallelism").getOrElse(5)
+
 }

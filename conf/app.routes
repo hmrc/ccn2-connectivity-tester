@@ -1,1 +1,3 @@
 # microservice specific routes
+
+POST       /acknowledgement         uk.gov.hmrc.ccn2connectivitytester.controllers.NotificationController.message

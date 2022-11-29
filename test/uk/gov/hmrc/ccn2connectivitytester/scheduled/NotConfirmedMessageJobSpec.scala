@@ -16,30 +16,32 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import java.util.UUID
+
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.Source.fromIterator
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
+import play.api.http.Status.ACCEPTED
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
-import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
+import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.Future.successful
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
-class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
+class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
   with MockitoSugar with ArgumentMatchersSugar {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .configure(
@@ -49,23 +51,28 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
 
   trait Setup {
     val appConfigMock: AppConfig = mock[AppConfig]
-    val outboundSoapConnector: OutboundSoapConnector = mock[OutboundSoapConnector]
-    val mockOutboundService: OutboundService = mock[OutboundService]
+    val mockMongoRepository: SoapMessageStatusRepository = mock[SoapMessageStatusRepository]
     val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
   }
 
-  "SendV1SoapMessageJobTest" should {
-    "invoke sending V1 message on OutboundSoapConnector" in new Setup {
+  "NotConfirmedMessageJob" should {
+    "process messages that have not received confirmations" in new Setup {
+      val message = new SoapMessageStatus(UUID.randomUUID(), "some id", SendingStatus.SENT, ACCEPTED)
+      when(appConfigMock.parallelism).thenReturn(2)
+      when(appConfigMock.checkJobLockDuration).thenReturn(Duration("5s"))
+      when(appConfigMock.checkInterval).thenReturn(Duration("5s"))
       when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(true))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
-      when(mockOutboundService.sendTestMessage(*)).thenReturn(successful(SuccessResult))
-
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
-      when(mockOutboundService.sendTestMessage(V1)) thenReturn Future(SuccessResult)
-      val underTest = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
+      when(mockMongoRepository.retrieveMessagesMissingConfirmation).
+      thenReturn(Source.future(successful(message)))
+
+      val underTest = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
       val result: underTest.Result = await(underTest.execute)
-      result.message shouldBe "Job named SendV1SoapMessageJob ran and completed with result SuccessResult"
-      verify(mockOutboundService).sendTestMessage(V1)
+
+      result.message shouldBe "Job named NotConfirmedMessageJob ran and completed with result OK"
+      verify(mockMongoRepository).retrieveMessagesMissingConfirmation
+      verifyNoMoreInteractions(mockMongoRepository)
     }
   }
 
