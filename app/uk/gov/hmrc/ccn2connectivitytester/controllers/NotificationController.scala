@@ -21,10 +21,11 @@ import play.api.Logging
 import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.common._
 import uk.gov.hmrc.ccn2connectivitytester.services.NotificationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class NotificationController @Inject()(cc: ControllerComponents,
@@ -32,16 +33,16 @@ class NotificationController @Inject()(cc: ControllerComponents,
                                       (implicit ec: ExecutionContext)
   extends BackendController(cc) with Logging {
 
-  def message(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def message: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[SoapMessageStatus] { messageRequest =>
-      notificationService.processNotification(messageRequest.messageId, messageRequest.status)
-      logger.debug(s"Received notification $messageRequest")
-      Future.successful(Results.Ok)
+      notificationService.processNotification(messageRequest.messageId, messageRequest.status) map {
+        case UpdateSuccessResult =>
+          logger.debug(s"Received notification $messageRequest")
+          Ok
+        case MessageIdNotFoundResult =>
+          logger.warn(s"Received notification for unknown ID $messageRequest.messageId")
+          NotFound
+      }
     }
   }
-
-  def recovery = {
-    Future.successful(INTERNAL_SERVER_ERROR)
-  }
-
 }

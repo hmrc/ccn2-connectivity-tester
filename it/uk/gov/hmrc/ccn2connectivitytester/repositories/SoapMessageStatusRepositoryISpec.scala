@@ -17,13 +17,12 @@
 package uk.gov.hmrc.ccn2connectivitytester.repositories
 
 import java.time.Period
-import java.time.temporal.{ChronoUnit, TemporalUnit}
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.UUID.randomUUID
 
-import akka.NotUsed
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Sink
 import org.mongodb.scala.MongoWriteException
 import org.mongodb.scala.ReadPreference.primaryPreferred
 import org.mongodb.scala.bson.{BsonBoolean, BsonInt64}
@@ -40,8 +39,6 @@ import uk.gov.hmrc.ccn2connectivitytester.models
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
-
-import scala.reflect.macros.whitebox
 
 
 class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoRepositorySupport[SoapMessageStatus] with
@@ -188,7 +185,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
 
       val Some(returnedMessage) = await(serviceRepo.findById(sentStatusMessage.messageId))
 
-      returnedMessage.messageId shouldBe (sentStatusMessage.messageId)
+      returnedMessage.messageId shouldBe sentStatusMessage.messageId
     }
 
     "not find a message that does not exist" in {

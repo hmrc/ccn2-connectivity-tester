@@ -18,11 +18,15 @@ package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LockedScheduledJob {
-  case class Result(message: String)
+
+  lazy val lockKeeper: LockService = LockService(lockRepository, lockId = s"$name-scheduled-job-lock", ttl = 1.hour)
+  val releaseLockAfter: FiniteDuration
+  val lockRepository: MongoLockRepository
+
   def name: String
 
   def initialDelay: FiniteDuration
@@ -31,19 +35,16 @@ trait LockedScheduledJob {
 
   def executeInLock(implicit ec: ExecutionContext): Future[this.Result]
 
-  val releaseLockAfter: FiniteDuration
-
-  val lockRepository: MongoLockRepository
-
-  lazy val lockKeeper: LockService = LockService(lockRepository, lockId = s"$name-scheduled-job-lock", ttl = 1.hour)
-
   final def execute(implicit ec: ExecutionContext): Future[Result] =
     lockKeeper.withLock {
       executeInLock
     } map {
       case Some(Result(msg)) => Result(s"Job named $name ran and completed with result $msg")
-      case None              => Result(s"Job named $name cannot acquire mongo lock so did not run")
+      case None => Result(s"Job named $name cannot acquire mongo lock so did not run")
     }
+
   override def toString() = s"Scheduled job named $name, initially pausing for $initialDelay then running every $interval"
+
+  case class Result(message: String)
 
 }
