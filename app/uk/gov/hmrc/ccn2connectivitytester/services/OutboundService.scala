@@ -19,8 +19,9 @@ package uk.gov.hmrc.ccn2connectivitytester.services
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SendResult, SuccessResult, Version}
+import uk.gov.hmrc.ccn2connectivitytester.models.common._
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,11 +41,11 @@ class OutboundService @Inject()(outboundConnector: OutboundSoapConnector,
 
     outboundConnector.sendRequestAndProcessResponse(requestToSend) map { response =>
       response match {
-        case Right(soapMessageStatus) => soapMessageStatusRepository.persist(soapMessageStatus)
+        case Right(soapMessageStatus) =>
+          soapMessageStatusRepository.persist(soapMessageStatus)
           SuccessResult
-        case Left(UpstreamErrorResponse(message, statusCode, _, _)) => logger.warn(s"Error $message and status code $statusCode")
-          FailResult
-        case _ => logger.warn("Unhandled error when calling api-platform-outbound-soap")
+        case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>
+          logger.warn(s"Error $message and status code $statusCode")
           FailResult
       }
     }

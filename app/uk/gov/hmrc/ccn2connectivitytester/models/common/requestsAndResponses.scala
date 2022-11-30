@@ -49,7 +49,9 @@ class Requests @Inject()(appConfig: AppConfig) {
        |  "replyTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
        |  "faultTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
        |  "messageId":"$messageId"
-       |  }
+       |  },
+       |  "confirmationOfDelivery": true,
+       |  "notificationUrl": "${appConfig.notificationUrl}"
        |}
     """.stripMargin
   }
@@ -65,7 +67,9 @@ class Requests @Inject()(appConfig: AppConfig) {
        |   "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
        |   "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
        |   "messageId":"$messageId"
-       | }
+       | },
+       |  "confirmationOfDelivery": true,
+       |  "notificationUrl": "${appConfig.notificationUrl}"
        |}
     """.stripMargin
   }

@@ -31,15 +31,14 @@ import play.mvc.Http.Status.ACCEPTED
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models._
-import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.{V1, V2}
+import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import play.shaded.ahc.org.asynchttpclient.exception.RemotelyClosedException
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.Future.{failed, successful}
+import scala.concurrent.Future.successful
 
 class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -57,7 +56,7 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     val configMock = mock[AppConfig]
     val underTest = new OutboundService(connectorMock, repoMock, requestsMock)
     val uri = "https://dummy.com"
-    when(configMock.outboundSoapUri).thenReturn(uri)
+    when(configMock.outboundSoapUrl).thenReturn(uri)
   }
 
   "sendMessage" should {

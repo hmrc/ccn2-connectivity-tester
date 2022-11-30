@@ -57,29 +57,9 @@ class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appC
         IndexOptions().name("messageIdIndex").background(true).unique(false)),
       IndexModel(ascending("createDateTime"),
         IndexOptions().name("ttlIndex").background(true)
-          .expireAfter(60 * 60 * 24 * 30, TimeUnit.SECONDS))),
-    /*extraCodecs = Seq(
-      new UuidCodec(UuidRepresentation.STANDARD),
-      Codecs.playFormatCodec(SoapMessageStatus.formatter)/*,
-      Codecs.playFormatCodec(MongoFormatter.instantFormat)*/
-    )*/)
-    with Logging {
+          .expireAfter(60 * 60 * 24 * 30, TimeUnit.SECONDS)))
+  ) with Logging {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-
-  /*override lazy val collection: MongoCollection[SoapMessageStatus] =
-    CollectionFactory
-      .collection(mongoComponent.database, collectionName, domainFormat)
-      .withCodecRegistry(
-        fromRegistries(
-          fromCodecs(
-            Codecs.playFormatCodec(domainFormat),
-            Codecs.playFormatCodec(MongoFormatter.messageStatusFormatter),
-            Codecs.playFormatCodec(MongoFormatter.instantFormat)
-//            Codecs.playFormatCodec(MongoFormatter.dateTimeFormat)
-          ),
-          MongoClient.DEFAULT_CODEC_REGISTRY
-        )
-      )*/
 
   def persist(entity: SoapMessageStatus): Future[InsertOneResult] = {
     collection.insertOne(entity).toFuture()
@@ -88,11 +68,6 @@ class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appC
   def findById(searchForId: String): Future[Option[SoapMessageStatus]] = {
     val findQuery = or(Document("messageId" -> searchForId), Document("globalId" -> searchForId))
     collection.find(findQuery).headOption()
-      .recover {
-        case e: Exception =>
-          logger.warn(s"error finding message - ${e.getMessage}")
-          None
-      }
   }
 
   def updateSendingStatus(messageId: String, newStatus: SendingStatus): Future[Option[SoapMessageStatus]] = {
@@ -107,31 +82,6 @@ class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appC
     MongoSource(collection.withReadPreference(primaryPreferred())
       .find(filter = and(equal("status", SendingStatus.SENT.entryName),
         and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration)))))
-      .map(_.asInstanceOf[SoapMessageStatus]))
+    )
   }
-
-  /*def updateNextRetryTime(globalId: UUID, newRetryDateTime: DateTime): Future[Option[RetryingOutboundSoapMessage]] = {
-    collection.withReadPreference(primaryPreferred())
-      .findOneAndUpdate(filter = equal("globalId", Codecs.toBson(globalId)),
-        update = set("retryDateTime", newRetryDateTime),
-        options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-      ).map(_.asInstanceOf[RetryingOutboundSoapMessage]).headOption()
-  }
-
-
-  def updateConfirmationStatus(messageId: String, newStatus: DeliveryStatus, confirmationMsg: String): Future[Option[OutboundSoapMessage]] = {
-    val field: String = newStatus match {
-      case DeliveryStatus.COD => "codMessage"
-      case DeliveryStatus.COE => "coeMessage"
-    }
-
-    for {
-      _ <- collection.bulkWrite(
-        List(UpdateManyModel(Document("messageId" -> messageId), combine(set("status", Codecs.toBson(newStatus.entryName)), set(field, confirmationMsg)))),
-        BulkWriteOptions().ordered(false)).toFuture()
-      findUpdated <- findById(messageId)
-    } yield findUpdated
-  }
-
-  */
 }

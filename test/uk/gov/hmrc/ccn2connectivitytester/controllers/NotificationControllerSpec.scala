@@ -65,6 +65,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         status(result) shouldBe OK
         verify(mockNotificationService).processNotification(messageId, SendingStatus.SENT)
       }
+
       "return message not found when processing notification for message ID not known" in new Setup {
         val messageId = "id"
         val message = Json.obj(

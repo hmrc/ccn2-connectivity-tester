@@ -54,7 +54,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
 
   "postMessage" should {
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
-      s"handleSuccess for ${version._1} messages" in new Setup {
+      s"handle success for ${version._1} messages" in new Setup {
         val httpStatus = ACCEPTED
         val successResponse =
           s"""{
@@ -77,7 +77,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
     }
 
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
-      s"handleRetrying for ${version._1} messages" in new Setup {
+      s"handle retrying for ${version._1} messages" in new Setup {
         val httpStatus = PERMANENT_REDIRECT
         val retryingResponse =
           s"""{
@@ -100,7 +100,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
     }
 
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
-      s"handleFailed for ${version._1} messages" in new Setup {
+      s"handle failed for ${version._1} messages" in new Setup {
         val httpStatus = INTERNAL_SERVER_ERROR
         val failResponse =
           s"""{
@@ -123,7 +123,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
     }
 
     Seq("V1-request", "V2-request") foreach { version =>
-      s"handleNotFound for $version messages" in new Setup {
+      s"handle NotFound for $version messages" in new Setup {
         setupPostForCCN("/message", 404)
         val response = await(underTest.sendRequestAndProcessResponse(version, wireMockUrl))
         response.isLeft shouldBe true

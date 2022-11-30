@@ -79,7 +79,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "insert a failed message when it does not exist" in {
       await(serviceRepo.persist(failedStatusMessage))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find().toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
 
       fetchedRecords.size shouldBe 1
       fetchedRecords.head shouldBe failedStatusMessage
@@ -89,7 +89,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "insert a retrying message when it does not exist" in {
       await(serviceRepo.persist(retryingStatusMessage))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find().toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
 
       fetchedRecords.size shouldBe 1
       fetchedRecords.head shouldBe retryingStatusMessage
@@ -136,7 +136,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       await(serviceRepo.persist(retryingStatusMessage))
       val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.FAILED))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find.toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find.toFuture())
       fetchedRecords.size shouldBe 1
       fetchedRecords.head.status shouldBe SendingStatus.FAILED
       fetchedRecords.head.isInstanceOf[SoapMessageStatus] shouldBe true
@@ -148,7 +148,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       await(serviceRepo.persist(retryingStatusMessage))
       val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.SENT))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find.toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find.toFuture())
       fetchedRecords.size shouldBe 1
       fetchedRecords.head.status shouldBe SendingStatus.SENT
       fetchedRecords.head.isInstanceOf[SoapMessageStatus] shouldBe true
@@ -159,7 +159,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       await(serviceRepo.persist(retryingStatusMessage))
       val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COD))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find.toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find.toFuture())
       fetchedRecords.size shouldBe 1
       fetchedRecords.head.status shouldBe SendingStatus.COD
       fetchedRecords.head.isInstanceOf[SoapMessageStatus] shouldBe true
@@ -170,7 +170,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       await(serviceRepo.persist(retryingStatusMessage))
       val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COE))
 
-      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred).find.toFuture())
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find.toFuture())
       fetchedRecords.size shouldBe 1
       fetchedRecords.head.status shouldBe SendingStatus.COE
       fetchedRecords.head.isInstanceOf[SoapMessageStatus] shouldBe true

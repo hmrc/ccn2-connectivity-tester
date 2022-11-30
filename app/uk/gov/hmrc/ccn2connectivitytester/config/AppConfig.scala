@@ -25,9 +25,10 @@ import scala.concurrent.duration.Duration
 class AppConfig @Inject()(config: Configuration) {
 
   val appName: String = config.get[String]("appName")
-  val outboundSoapUri: String = config.get[String]("microservice.services.api-platform-outbound-soap.host")
-val wsdlUrlForV1 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
-val wsdlUrlForV2 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
+  val outboundSoapUrl: String = config.get[String]("microservice.services.api-platform-outbound-soap.host")
+  val notificationUrl: String = config.get[String]("notification.url")
+  val wsdlUrlForV1 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
+  val wsdlUrlForV2 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
   val checkInterval: Duration = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
   val checkInitialDelay: Duration = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
   val checkJobLockDuration: Duration = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
