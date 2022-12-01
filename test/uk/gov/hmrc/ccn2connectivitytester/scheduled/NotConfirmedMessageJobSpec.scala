@@ -20,7 +20,6 @@ import java.util.UUID
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.Source.fromIterator
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

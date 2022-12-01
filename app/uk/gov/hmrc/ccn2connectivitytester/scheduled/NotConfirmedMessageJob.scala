@@ -45,10 +45,12 @@ class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRe
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
       soapMessageStatusRepository.updateSendingStatus(soapMessageStatus.messageId, SendingStatus.ALERTED)
-      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of delivery since it was created at ${soapMessageStatus.createDateTime.}")
+      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of " +
+        s"delivery since it was created at ${soapMessageStatus.createDateTime}")
       Future.unit
     }
 
-    soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)).map(done => Result("OK"))
+    soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(
+      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)).map(done => Result("OK"))
   }
 }
