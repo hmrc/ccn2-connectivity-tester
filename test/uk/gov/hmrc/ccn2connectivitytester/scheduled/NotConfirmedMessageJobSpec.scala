@@ -64,14 +64,15 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
       when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(true))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
-      when(mockMongoRepository.retrieveMessagesMissingConfirmation).
-      thenReturn(Source.future(successful(message)))
+      when(mockMongoRepository.updateSendingStatus(message.messageId, SendingStatus.ALERTED)).thenReturn(successful(Some(message.copy(status = SendingStatus.ALERTED))))
+      when(mockMongoRepository.retrieveMessagesMissingConfirmation).thenReturn(Source.future(successful(message)))
 
       val underTest = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
       val result: underTest.Result = await(underTest.execute)
 
       result.message shouldBe "Job named NotConfirmedMessageJob ran and completed with result OK"
       verify(mockMongoRepository).retrieveMessagesMissingConfirmation
+      verify(mockMongoRepository).updateSendingStatus(message.messageId, SendingStatus.ALERTED)
       verifyNoMoreInteractions(mockMongoRepository)
     }
   }

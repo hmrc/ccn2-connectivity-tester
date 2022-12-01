@@ -34,7 +34,7 @@ import uk.gov.hmrc.ccn2connectivitytester.models._
 import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.{V1, V2}
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

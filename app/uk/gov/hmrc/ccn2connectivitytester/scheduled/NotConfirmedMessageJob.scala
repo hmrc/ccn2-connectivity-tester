@@ -21,7 +21,7 @@ import akka.stream.scaladsl.Sink
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
@@ -44,7 +44,8 @@ class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRe
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
-      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of delivery")
+      soapMessageStatusRepository.updateSendingStatus(soapMessageStatus.messageId, SendingStatus.ALERTED)
+      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of delivery since it was created at ${soapMessageStatus.createDateTime}")
       Future.unit
     }
 

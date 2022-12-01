@@ -84,6 +84,8 @@ object SendingStatus extends Enum[SendingStatus] with PlayJsonEnum[SendingStatus
 
   case object RETRYING extends SendingStatus("RETRYING")
 
+  case object ALERTED extends SendingStatus("ALERTED")
+
   case object COE extends SendingStatus("COE")
 
   case object COD extends SendingStatus("COD")
