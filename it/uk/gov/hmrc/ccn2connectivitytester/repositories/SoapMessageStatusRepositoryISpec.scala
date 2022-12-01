@@ -177,6 +177,17 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       returnedStatusMessage.status shouldBe SendingStatus.COE
       returnedStatusMessage.isInstanceOf[SoapMessageStatus] shouldBe true
     }
+    "update the message to have a status of ALERTED" in {
+      await(serviceRepo.persist(retryingStatusMessage))
+      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.ALERTED))
+
+      val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find.toFuture())
+      fetchedRecords.size shouldBe 1
+      fetchedRecords.head.status shouldBe SendingStatus.ALERTED
+      fetchedRecords.head.isInstanceOf[SoapMessageStatus] shouldBe true
+      returnedStatusMessage.status shouldBe SendingStatus.ALERTED
+      returnedStatusMessage.isInstanceOf[SoapMessageStatus] shouldBe true
+    }
   }
 
   "findById" should {

@@ -21,7 +21,6 @@ import play.api.Logging
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common._
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}

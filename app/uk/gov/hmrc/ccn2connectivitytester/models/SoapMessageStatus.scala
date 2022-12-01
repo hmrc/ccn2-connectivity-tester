@@ -17,16 +17,17 @@
 package uk.gov.hmrc.ccn2connectivitytester.models
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import play.api.libs.json._
-
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import scala.collection.immutable
 
-final case class SoapMessageStatus(globalId: UUID, messageId: String, status: SendingStatus, ccnHttpStatus: Int, createDateTime: Instant = Instant.now())
+final case class SoapMessageStatus(globalId: UUID, messageId: String, status: SendingStatus, ccnHttpStatus: Int,
+                                   createDateTime: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS))
 
 object SoapMessageStatus {
   val reads: Reads[SoapMessageStatus] = {
