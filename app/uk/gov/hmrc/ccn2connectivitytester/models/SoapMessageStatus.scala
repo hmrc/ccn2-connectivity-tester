@@ -54,7 +54,6 @@ object SoapMessageStatus {
       ) (unlift(SoapMessageStatus.unapply))
   }
   implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
-//  implicit val instantFormatter = MongoJavatimeFormats.instantFormat
 }
 
 sealed abstract class StatusType extends EnumEntry
