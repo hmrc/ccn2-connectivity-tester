@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.config
+package uk.gov.hmrc.ccn2connectivitytester.models.common
 
-import com.google.inject.AbstractModule
+import enumeratum._
 
-class Module extends AbstractModule {
+sealed trait Version extends EnumEntry
 
-  override def configure(): Unit = {
+object Version extends Enum[Version] {
 
-    bind(classOf[AppConfig]).asEagerSingleton()
-  }
+  val values = findValues
+
+  case object V1 extends Version
+
+  case object V2 extends Version
+
 }

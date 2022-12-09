@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.config
+package uk.gov.hmrc.ccn2connectivitytester.connectors
 
-import com.google.inject.AbstractModule
+import com.github.tomakehurst.wiremock.client.WireMock._
 
-class Module extends AbstractModule {
+trait WiremockTestSupport {
 
-  override def configure(): Unit = {
+  def setupPostForCCNWithResponseBody(path: String, desiredStatus: Int, desiredResponse: String) = {
+    stubFor(
+      post(urlEqualTo(path))
+        .willReturn(aResponse().withStatus(desiredStatus).withBody(desiredResponse))
+    )
+  }
 
-    bind(classOf[AppConfig]).asEagerSingleton()
+  def setupPostForCCN(path: String, desiredStatus: Int) = {
+    stubFor(
+      post(urlEqualTo(path))
+        .willReturn(aResponse().withStatus(desiredStatus))
+    )
   }
 }
