@@ -45,9 +45,9 @@ class Requests @Inject()(appConfig: AppConfig) {
        | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
        | "addressing": {
        |  "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
-       |  "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_CR.CONF",
-       |  "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_CR.CONF",
-       |  "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_CR.CONF",
+       |  "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
+       |  "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
+       |  "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
        |  "messageId":"$messageId"
        |  },
        |  "confirmationOfDelivery": true,
