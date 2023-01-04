@@ -21,7 +21,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % hmrcMongoVersion            % "it",
     "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0"                     % "test, it",
     "org.mockito"             %% "mockito-scala-scalatest"    % "1.17.12"                   % "test, it",
-    "com.github.tomakehurst"  %  "wiremock-jre8-standalone"   % "2.34.0"                    % "it"
+    "com.github.tomakehurst"  %  "wiremock-jre8-standalone"   % "2.35.0"                    % "it"
 
   )
 }
