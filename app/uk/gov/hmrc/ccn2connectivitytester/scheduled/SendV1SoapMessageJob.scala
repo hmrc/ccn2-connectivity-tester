@@ -26,9 +26,8 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SendV1SoapMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
-                                     outboundService: OutboundService)
-  extends LockedScheduledJob {
+class SendV1SoapMessageJob @Inject() (appConfig: AppConfig, override val lockRepository: MongoLockRepository, outboundService: OutboundService)
+    extends LockedScheduledJob {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "SendV1SoapMessageJob"

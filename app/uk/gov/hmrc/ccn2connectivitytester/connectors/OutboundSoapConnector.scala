@@ -29,7 +29,7 @@ import uk.gov.hmrc.http._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class OutboundSoapConnector @Inject()(appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class OutboundSoapConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
   lazy val destinationUri: String = appConfig.outboundSoapUrl
 
   def sendRequestAndProcessResponse(request: String, destinationUrl: String = destinationUri): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {

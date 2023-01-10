@@ -38,7 +38,7 @@ import scala.concurrent.Future.successful
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-  with MockitoSugar with ArgumentMatchersSugar {
+    with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
@@ -49,9 +49,9 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
     .build()
 
   trait Setup {
-    val appConfigMock: AppConfig = mock[AppConfig]
+    val appConfigMock: AppConfig                         = mock[AppConfig]
     val mockMongoRepository: SoapMessageStatusRepository = mock[SoapMessageStatusRepository]
-    val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
+    val mongoLockRepository: MongoLockRepository         = mock[MongoLockRepository]
   }
 
   "NotConfirmedMessageJob" should {
@@ -66,7 +66,7 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
       when(mockMongoRepository.updateSendingStatus(message.messageId, SendingStatus.ALERTED)).thenReturn(successful(Some(message.copy(status = SendingStatus.ALERTED))))
       when(mockMongoRepository.retrieveMessagesMissingConfirmation).thenReturn(Source.future(successful(message)))
 
-      val underTest = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
+      val underTest                = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
       val result: underTest.Result = await(underTest.execute)
 
       result.message shouldBe "Job named NotConfirmedMessageJob ran and completed with result OK"

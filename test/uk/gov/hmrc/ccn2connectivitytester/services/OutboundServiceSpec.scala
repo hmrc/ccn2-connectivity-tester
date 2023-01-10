@@ -50,12 +50,12 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     .build()
 
   trait Setup {
-    val repoMock = mock[SoapMessageStatusRepository]
+    val repoMock      = mock[SoapMessageStatusRepository]
     val connectorMock = mock[OutboundSoapConnector]
-    val requestsMock = mock[Requests]
-    val configMock = mock[AppConfig]
-    val underTest = new OutboundService(connectorMock, repoMock, requestsMock)
-    val uri = "https://dummy.com"
+    val requestsMock  = mock[Requests]
+    val configMock    = mock[AppConfig]
+    val underTest     = new OutboundService(connectorMock, repoMock, requestsMock)
+    val uri           = "https://dummy.com"
     when(configMock.outboundSoapUrl).thenReturn(uri)
   }
 
@@ -78,8 +78,7 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
 
     "handle failing to send a message" in new Setup {
       when(requestsMock.getV1Request).thenReturn("blah")
-      when(connectorMock.sendRequestAndProcessResponse(*, *)).
-        thenReturn(successful(Left(UpstreamErrorResponse("unexpected error", INTERNAL_SERVER_ERROR))))
+      when(connectorMock.sendRequestAndProcessResponse(*, *)).thenReturn(successful(Left(UpstreamErrorResponse("unexpected error", INTERNAL_SERVER_ERROR))))
 
       val result = await(underTest.sendTestMessage(V1))
 

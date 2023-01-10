@@ -29,11 +29,13 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
-                                       soapMessageStatusRepository: SoapMessageStatusRepository)
-                                      (implicit val ec: ExecutionContext, mat: Materializer)
-
-  extends LockedScheduledJob with Logging {
+class NotConfirmedMessageJob @Inject() (
+    appConfig: AppConfig,
+    override val lockRepository: MongoLockRepository,
+    soapMessageStatusRepository: SoapMessageStatusRepository
+  )(implicit val ec: ExecutionContext,
+    mat: Materializer
+  ) extends LockedScheduledJob with Logging {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "NotConfirmedMessageJob"
@@ -51,6 +53,7 @@ class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRe
     }
 
     soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(
-      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)).map(done => Result("OK"))
+      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
+    ).map(done => Result("OK"))
   }
 }

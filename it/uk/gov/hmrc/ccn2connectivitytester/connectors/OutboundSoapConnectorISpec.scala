@@ -32,10 +32,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
 class OutboundSoapConnectorISpec extends AnyWordSpec
-  with Matchers
-  with ScalaFutures
-  with IntegrationPatience
-  with GuiceOneAppPerSuite with WireMockSupport with WiremockTestSupport {
+    with Matchers
+    with ScalaFutures
+    with IntegrationPatience
+    with GuiceOneAppPerSuite with WireMockSupport with WiremockTestSupport {
   val requests = app.injector.instanceOf[Requests]
 
   override def fakeApplication(): Application =
@@ -47,15 +47,15 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
 
   trait Setup {
     val underTest: OutboundSoapConnector = app.injector.instanceOf[OutboundSoapConnector]
-    val messageId = "messageId"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    val globalId = UUID.randomUUID()
+    val messageId                        = "messageId"
+    implicit val hc: HeaderCarrier       = HeaderCarrier()
+    val globalId                         = UUID.randomUUID()
   }
 
   "postMessage" should {
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
       s"handle success for ${version._1} messages" in new Setup {
-        val httpStatus = ACCEPTED
+        val httpStatus      = ACCEPTED
         val successResponse =
           s"""{
              |"globalId":"$globalId",
@@ -65,7 +65,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, successResponse)
-        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response        = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId
@@ -78,7 +78,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
 
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
       s"handle retrying for ${version._1} messages" in new Setup {
-        val httpStatus = PERMANENT_REDIRECT
+        val httpStatus       = PERMANENT_REDIRECT
         val retryingResponse =
           s"""{
              |"globalId":"$globalId",
@@ -88,7 +88,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
-        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response         = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId
@@ -101,7 +101,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
 
     Seq("v1" -> requests.getV1Request, "v2" -> requests.getV2Request) foreach { version =>
       s"handle failed for ${version._1} messages" in new Setup {
-        val httpStatus = INTERNAL_SERVER_ERROR
+        val httpStatus   = INTERNAL_SERVER_ERROR
         val failResponse =
           s"""{
              |"globalId":"$globalId",
@@ -111,7 +111,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, failResponse)
-        val response = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response     = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId

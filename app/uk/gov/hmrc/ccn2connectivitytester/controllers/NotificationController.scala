@@ -28,15 +28,13 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class NotificationController @Inject()(cc: ControllerComponents,
-                                       notificationService: NotificationService)
-                                      (implicit ec: ExecutionContext)
-  extends BackendController(cc) with Logging {
+class NotificationController @Inject() (cc: ControllerComponents, notificationService: NotificationService)(implicit ec: ExecutionContext)
+    extends BackendController(cc) with Logging {
 
   def message: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[SoapMessageStatus] { messageRequest =>
       notificationService.processNotification(messageRequest.messageId, messageRequest.status) map {
-        case UpdateSuccessResult =>
+        case UpdateSuccessResult     =>
           logger.debug(s"Received notification $messageRequest")
           Ok
         case MessageIdNotFoundResult =>

@@ -24,17 +24,21 @@ import play.api.inject.ApplicationLifecycle
 import scala.concurrent.ExecutionContext
 
 class SchedulerModule extends AbstractModule {
+
   override def configure(): Unit = {
     bind(classOf[Scheduler]).asEagerSingleton()
   }
 }
 
 @Singleton
-class Scheduler @Inject()(override val applicationLifecycle: ApplicationLifecycle,
-                          override val application: Application,
-                          sendV1MessageJob: SendV1SoapMessageJob,
-                          sendV2MessageJob: SendV2SoapMessageJob,
-                          notConfirmedMessageJob: NotConfirmedMessageJob)
-                         (override implicit val ec: ExecutionContext) extends RunningOfScheduledJobs {
+class Scheduler @Inject() (
+    override val applicationLifecycle: ApplicationLifecycle,
+    override val application: Application,
+    sendV1MessageJob: SendV1SoapMessageJob,
+    sendV2MessageJob: SendV2SoapMessageJob,
+    notConfirmedMessageJob: NotConfirmedMessageJob
+  )(
+    override implicit val ec: ExecutionContext
+  ) extends RunningOfScheduledJobs {
   override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV1MessageJob, sendV2MessageJob, notConfirmedMessageJob)
 }

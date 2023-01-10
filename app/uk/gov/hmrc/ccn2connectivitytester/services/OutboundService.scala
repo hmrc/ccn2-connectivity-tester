@@ -26,11 +26,12 @@ import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class OutboundService @Inject()(outboundConnector: OutboundSoapConnector,
-                                soapMessageStatusRepository: SoapMessageStatusRepository,
-                                requests: Requests)
-                               (implicit val ec: ExecutionContext)
-  extends HttpErrorFunctions with Logging {
+class OutboundService @Inject() (
+    outboundConnector: OutboundSoapConnector,
+    soapMessageStatusRepository: SoapMessageStatusRepository,
+    requests: Requests
+  )(implicit val ec: ExecutionContext
+  ) extends HttpErrorFunctions with Logging {
 
   def sendTestMessage(version: Version): Future[SendResult] = {
     val requestToSend = version match {
@@ -40,7 +41,7 @@ class OutboundService @Inject()(outboundConnector: OutboundSoapConnector,
 
     outboundConnector.sendRequestAndProcessResponse(requestToSend) map { response =>
       response match {
-        case Right(soapMessageStatus) =>
+        case Right(soapMessageStatus)                               =>
           soapMessageStatusRepository.persist(soapMessageStatus)
           SuccessResult
         case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>

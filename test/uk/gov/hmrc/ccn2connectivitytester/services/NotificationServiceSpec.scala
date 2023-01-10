@@ -42,16 +42,16 @@ class NotificationServiceSpec extends AnyWordSpec with Matchers with GuiceOneApp
       "metrics.enabled" -> false
     )
     .build()
+
   trait Setup {
     val mockRepository = mock[SoapMessageStatusRepository]
-    val underTest = new NotificationService(mockRepository)
+    val underTest      = new NotificationService(mockRepository)
   }
-
 
   "processNotification" should {
     "update to SENT message that exists" in new Setup {
-      val messageId = "some message ID"
-      val newStatus = SendingStatus.SENT
+      val messageId         = "some message ID"
+      val newStatus         = SendingStatus.SENT
       val soapMessageStatus = new SoapMessageStatus(UUID.randomUUID(), messageId, SendingStatus.RETRYING, ACCEPTED)
       when(mockRepository.findById(messageId)).thenReturn(successful(Some(soapMessageStatus)))
       when(mockRepository.updateSendingStatus(messageId, newStatus)).thenReturn(successful(Some(soapMessageStatus)))
@@ -63,8 +63,8 @@ class NotificationServiceSpec extends AnyWordSpec with Matchers with GuiceOneApp
     }
 
     "update to FAILED message that exists" in new Setup {
-      val messageId = "some message ID"
-      val newStatus = SendingStatus.FAILED
+      val messageId         = "some message ID"
+      val newStatus         = SendingStatus.FAILED
       val soapMessageStatus = new SoapMessageStatus(UUID.randomUUID(), messageId, SendingStatus.RETRYING, ACCEPTED)
       when(mockRepository.findById(messageId)).thenReturn(successful(Some(soapMessageStatus)))
       when(mockRepository.updateSendingStatus(messageId, newStatus)).thenReturn(successful(Some(soapMessageStatus)))
@@ -76,8 +76,8 @@ class NotificationServiceSpec extends AnyWordSpec with Matchers with GuiceOneApp
     }
 
     "update to CoD message that exists" in new Setup {
-      val messageId = "some message ID"
-      val newStatus = SendingStatus.COD
+      val messageId         = "some message ID"
+      val newStatus         = SendingStatus.COD
       val soapMessageStatus = new SoapMessageStatus(UUID.randomUUID(), messageId, SendingStatus.SENT, ACCEPTED)
       when(mockRepository.findById(messageId)).thenReturn(successful(Some(soapMessageStatus)))
       when(mockRepository.updateSendingStatus(messageId, newStatus)).thenReturn(successful(Some(soapMessageStatus)))

@@ -27,7 +27,6 @@ case object MessageIdNotFoundResult extends UpdateResult
 
 case object UpdateSuccessResult extends UpdateResult
 
-
 sealed trait SendResult
 
 case object SuccessResult extends SendResult
@@ -36,8 +35,8 @@ case object FailResult extends SendResult
 
 case object RetryingResult extends SendResult
 
+class Requests @Inject() (appConfig: AppConfig) {
 
-class Requests @Inject()(appConfig: AppConfig) {
   def getV1Request: String = {
     val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V1"
     s"""

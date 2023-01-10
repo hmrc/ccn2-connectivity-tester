@@ -36,6 +36,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
+
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
@@ -47,17 +48,18 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     val fakeRequest = FakeRequest("POST", "/notification")
     trait Setup {
       val mockNotificationService = mock[NotificationService]
-      val underTest = new NotificationController(Helpers.stubControllerComponents(), mockNotificationService)
+      val underTest               = new NotificationController(Helpers.stubControllerComponents(), mockNotificationService)
     }
 
     "message" should {
       "return success when processing notification" in new Setup {
         val messageId = "id"
-        val message = Json.obj(
-          "globalId" -> UUID.randomUUID(),
-          "messageId" -> messageId,
-          "status" -> "SENT",
-          "ccnHttpStatus" -> 202)
+        val message   = Json.obj(
+          "globalId"      -> UUID.randomUUID(),
+          "messageId"     -> messageId,
+          "status"        -> "SENT",
+          "ccnHttpStatus" -> 202
+        )
         when(mockNotificationService.processNotification(*, *)).thenReturn(successful(UpdateSuccessResult))
 
         val result = underTest.message()(fakeRequest.withBody(message))
@@ -68,11 +70,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
       "return message not found when processing notification for message ID not known" in new Setup {
         val messageId = "id"
-        val message = Json.obj(
-          "globalId" -> UUID.randomUUID(),
-          "messageId" -> messageId,
-          "status" -> "SENT",
-          "ccnHttpStatus" -> 202)
+        val message   = Json.obj(
+          "globalId"      -> UUID.randomUUID(),
+          "messageId"     -> messageId,
+          "status"        -> "SENT",
+          "ccnHttpStatus" -> 202
+        )
         when(mockNotificationService.processNotification(*, *)).thenReturn(successful(MessageIdNotFoundResult))
 
         val result = underTest.message()(fakeRequest.withBody(message))

@@ -37,7 +37,7 @@ import scala.concurrent.Future.successful
 import scala.concurrent.duration.FiniteDuration
 
 class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-  with MockitoSugar with ArgumentMatchersSugar {
+    with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -48,10 +48,10 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
     .build()
 
   trait Setup {
-    val appConfigMock: AppConfig = mock[AppConfig]
+    val appConfigMock: AppConfig                     = mock[AppConfig]
     val outboundSoapConnector: OutboundSoapConnector = mock[OutboundSoapConnector]
-    val mockOutboundService: OutboundService = mock[OutboundService]
-    val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
+    val mockOutboundService: OutboundService         = mock[OutboundService]
+    val mongoLockRepository: MongoLockRepository     = mock[MongoLockRepository]
   }
 
   "SendV1SoapMessageJobTest" should {
@@ -62,7 +62,7 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
 
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
       when(mockOutboundService.sendTestMessage(V1)) thenReturn Future(SuccessResult)
-      val underTest = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
+      val underTest                = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
       val result: underTest.Result = await(underTest.execute)
       result.message shouldBe "Job named SendV1SoapMessageJob ran and completed with result SuccessResult"
       verify(mockOutboundService).sendTestMessage(V1)
