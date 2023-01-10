@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
-
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
+
+import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
 trait LockedScheduledJob {
 

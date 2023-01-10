@@ -17,8 +17,8 @@
 package uk.gov.hmrc.ccn2connectivitytester.models.common
 
 import java.time.Instant
-
 import javax.inject.Inject
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 
 sealed trait UpdateResult

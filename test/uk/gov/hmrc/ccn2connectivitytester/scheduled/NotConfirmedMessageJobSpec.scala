@@ -17,6 +17,9 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future.successful
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -24,18 +27,16 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.http.Status.ACCEPTED
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future.successful
-import scala.concurrent.duration.{Duration, FiniteDuration}
 
 class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     with MockitoSugar with ArgumentMatchersSugar {

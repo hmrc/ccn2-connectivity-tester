@@ -17,13 +17,14 @@
 package uk.gov.hmrc.ccn2connectivitytester.services
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
+import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
+
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common._
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
-
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class OutboundService @Inject() (

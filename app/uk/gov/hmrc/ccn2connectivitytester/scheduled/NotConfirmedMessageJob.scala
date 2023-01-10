@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
+
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import javax.inject.{Inject, Singleton}
+
 import play.api.Logging
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NotConfirmedMessageJob @Inject() (

@@ -17,23 +17,24 @@
 package uk.gov.hmrc.ccn2connectivitytester.controllers
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future.successful
 
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
+
 import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{MessageIdNotFoundResult, UpdateSuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.services.NotificationService
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future.successful
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
 

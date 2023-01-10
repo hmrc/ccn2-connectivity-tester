@@ -19,12 +19,12 @@ package uk.gov.hmrc.ccn2connectivitytester.models
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import scala.collection.immutable
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+
 import play.api.libs.json._
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
-import scala.collection.immutable
 
 final case class SoapMessageStatus(
     globalId: UUID,

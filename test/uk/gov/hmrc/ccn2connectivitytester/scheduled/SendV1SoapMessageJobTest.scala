@@ -16,25 +16,27 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.Future.successful
+import scala.concurrent.duration.FiniteDuration
+
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
 import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.Future.successful
-import scala.concurrent.duration.FiniteDuration
 
 class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     with MockitoSugar with ArgumentMatchersSugar {

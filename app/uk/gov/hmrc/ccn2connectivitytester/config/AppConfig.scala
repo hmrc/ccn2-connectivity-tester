@@ -17,9 +17,9 @@
 package uk.gov.hmrc.ccn2connectivitytester.config
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-
 import scala.concurrent.duration.Duration
+
+import play.api.Configuration
 
 @Singleton
 class AppConfig @Inject() (config: Configuration) {

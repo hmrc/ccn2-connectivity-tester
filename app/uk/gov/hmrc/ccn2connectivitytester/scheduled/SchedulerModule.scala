@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import com.google.inject.AbstractModule
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
+
+import com.google.inject.AbstractModule
+
 import play.api.Application
 import play.api.inject.ApplicationLifecycle
-
-import scala.concurrent.ExecutionContext
 
 class SchedulerModule extends AbstractModule {
 

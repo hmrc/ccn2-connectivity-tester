@@ -17,13 +17,14 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
+
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SendV1SoapMessageJob @Inject() (appConfig: AppConfig, override val lockRepository: MongoLockRepository, outboundService: OutboundService)
