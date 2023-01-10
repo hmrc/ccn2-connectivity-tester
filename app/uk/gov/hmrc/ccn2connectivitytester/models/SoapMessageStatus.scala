@@ -19,17 +19,23 @@ package uk.gov.hmrc.ccn2connectivitytester.models
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import scala.collection.immutable
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+
 import play.api.libs.json._
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import scala.collection.immutable
-
-final case class SoapMessageStatus(globalId: UUID, messageId: String, status: SendingStatus, ccnHttpStatus: Int,
-                                   createDateTime: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS))
+final case class SoapMessageStatus(
+    globalId: UUID,
+    messageId: String,
+    status: SendingStatus,
+    ccnHttpStatus: Int,
+    createDateTime: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+  )
 
 object SoapMessageStatus {
+
   val reads: Reads[SoapMessageStatus] = {
 
     import play.api.libs.functional.syntax._
@@ -40,18 +46,19 @@ object SoapMessageStatus {
         (__ \ "status").read[SendingStatus] and
         (__ \ "ccnHttpStatus").read[Int] and
         (__ \ "createDateTime").read(MongoJavatimeFormats.instantFormat).orElse(Reads.pure(Instant.now()))
-      ) (SoapMessageStatus.apply _)
+    )(SoapMessageStatus.apply _)
   }
-  val writes: OWrites[SoapMessageStatus] = {
+
+  val writes: OWrites[SoapMessageStatus]             = {
     import play.api.libs.functional.syntax._
-    
+
     (
       (__ \ "globalId").write[UUID] and
         (__ \ "messageId").write[String] and
         (__ \ "status").write[SendingStatus] and
         (__ \ "ccnHttpStatus").write[Int] and
         (__ \ "createDateTime").write(MongoJavatimeFormats.instantFormat)
-      ) (unlift(SoapMessageStatus.unapply))
+    )(unlift(SoapMessageStatus.unapply))
   }
   implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
 }

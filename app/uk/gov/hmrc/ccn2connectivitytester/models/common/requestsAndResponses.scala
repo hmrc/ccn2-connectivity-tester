@@ -17,8 +17,8 @@
 package uk.gov.hmrc.ccn2connectivitytester.models.common
 
 import java.time.Instant
-
 import javax.inject.Inject
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 
 sealed trait UpdateResult
@@ -26,7 +26,6 @@ sealed trait UpdateResult
 case object MessageIdNotFoundResult extends UpdateResult
 
 case object UpdateSuccessResult extends UpdateResult
-
 
 sealed trait SendResult
 
@@ -36,8 +35,8 @@ case object FailResult extends SendResult
 
 case object RetryingResult extends SendResult
 
+class Requests @Inject() (appConfig: AppConfig) {
 
-class Requests @Inject()(appConfig: AppConfig) {
   def getV1Request: String = {
     val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V1"
     s"""

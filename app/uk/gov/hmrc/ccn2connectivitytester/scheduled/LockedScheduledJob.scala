@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
-
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
+
+import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
 trait LockedScheduledJob {
 
@@ -40,7 +40,7 @@ trait LockedScheduledJob {
       executeInLock
     } map {
       case Some(Result(msg)) => Result(s"Job named $name ran and completed with result $msg")
-      case None => Result(s"Job named $name cannot acquire mongo lock so did not run")
+      case None              => Result(s"Job named $name cannot acquire mongo lock so did not run")
     }
 
   override def toString() = s"Scheduled job named $name, initially pausing for $initialDelay then running every $interval"

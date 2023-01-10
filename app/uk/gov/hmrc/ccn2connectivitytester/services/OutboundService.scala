@@ -17,20 +17,22 @@
 package uk.gov.hmrc.ccn2connectivitytester.services
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
+import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
+
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common._
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
-
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class OutboundService @Inject()(outboundConnector: OutboundSoapConnector,
-                                soapMessageStatusRepository: SoapMessageStatusRepository,
-                                requests: Requests)
-                               (implicit val ec: ExecutionContext)
-  extends HttpErrorFunctions with Logging {
+class OutboundService @Inject() (
+    outboundConnector: OutboundSoapConnector,
+    soapMessageStatusRepository: SoapMessageStatusRepository,
+    requests: Requests
+  )(implicit val ec: ExecutionContext
+  ) extends HttpErrorFunctions with Logging {
 
   def sendTestMessage(version: Version): Future[SendResult] = {
     val requestToSend = version match {
@@ -40,7 +42,7 @@ class OutboundService @Inject()(outboundConnector: OutboundSoapConnector,
 
     outboundConnector.sendRequestAndProcessResponse(requestToSend) map { response =>
       response match {
-        case Right(soapMessageStatus) =>
+        case Right(soapMessageStatus)                               =>
           soapMessageStatusRepository.persist(soapMessageStatus)
           SuccessResult
         case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>

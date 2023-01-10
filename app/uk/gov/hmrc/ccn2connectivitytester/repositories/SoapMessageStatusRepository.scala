@@ -18,47 +18,46 @@ package uk.gov.hmrc.ccn2connectivitytester.repositories
 
 import java.time.Instant
 import java.time.Instant.now
+import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 import akka.NotUsed
 import akka.stream.alpakka.mongodb.scaladsl.MongoSource
 import akka.stream.scaladsl.Source
-import org.mongodb.scala.model.Filters._
-import play.api.libs.json.Format
-import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-import java.util.concurrent.TimeUnit
-
-import javax.inject.{Inject, Singleton}
 import org.mongodb.scala.ReadPreference.primaryPreferred
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Filters.{equal, or}
+import org.mongodb.scala.model.Filters.{equal, or, _}
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result.InsertOneResult
+
 import play.api.Logging
-import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
-import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 
 @Singleton
-class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appConfig: AppConfig)
-                                           (implicit ec: ExecutionContext)
-  extends PlayMongoRepository[SoapMessageStatus](
-    collectionName = "messages",
-    mongoComponent = mongoComponent,
-    domainFormat = SoapMessageStatus.formatter,
-    indexes = Seq(IndexModel(ascending("globalId"),
-      IndexOptions().name("globalIdIndex").background(true).unique(true)),
-      IndexModel(ascending("messageId"),
-        IndexOptions().name("messageIdIndex").background(true).unique(false)),
-      IndexModel(ascending("createDateTime"),
-        IndexOptions().name("ttlIndex").background(true)
-          .expireAfter(60 * 60 * 24 * 30, TimeUnit.SECONDS)))
-  ) with Logging {
+class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, appConfig: AppConfig)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[SoapMessageStatus](
+      collectionName = "messages",
+      mongoComponent = mongoComponent,
+      domainFormat = SoapMessageStatus.formatter,
+      indexes = Seq(
+        IndexModel(ascending("globalId"), IndexOptions().name("globalIdIndex").background(true).unique(true)),
+        IndexModel(ascending("messageId"), IndexOptions().name("messageIdIndex").background(true).unique(false)),
+        IndexModel(
+          ascending("createDateTime"),
+          IndexOptions().name("ttlIndex").background(true)
+            .expireAfter(60 * 60 * 24 * 30, TimeUnit.SECONDS)
+        )
+      )
+    ) with Logging {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   def persist(entity: SoapMessageStatus): Future[InsertOneResult] = {
@@ -72,7 +71,8 @@ class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appC
 
   def updateSendingStatus(messageId: String, newStatus: SendingStatus): Future[Option[SoapMessageStatus]] = {
     collection.withReadPreference(primaryPreferred())
-      .findOneAndUpdate(filter = equal("messageId", Codecs.toBson(messageId)),
+      .findOneAndUpdate(
+        filter = equal("messageId", Codecs.toBson(messageId)),
         update = set("status", Codecs.toBson(newStatus.entryName)),
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       ).toFutureOption()
@@ -80,8 +80,6 @@ class SoapMessageStatusRepository @Inject()(mongoComponent: MongoComponent, appC
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
     MongoSource(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(equal("status", SendingStatus.SENT.entryName),
-        and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration)))))
-    )
+      .find(filter = and(equal("status", SendingStatus.SENT.entryName), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 }
