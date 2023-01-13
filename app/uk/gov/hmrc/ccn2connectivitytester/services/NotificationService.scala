@@ -17,15 +17,15 @@
 package uk.gov.hmrc.ccn2connectivitytester.services
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{MessageIdNotFoundResult, UpdateResult, UpdateSuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
 
-import scala.concurrent.{ExecutionContext, Future}
-
 @Singleton
-class NotificationService @Inject()(soapMessageStatusRepository: SoapMessageStatusRepository)
-                                   (implicit val ec: ExecutionContext) {
+class NotificationService @Inject() (soapMessageStatusRepository: SoapMessageStatusRepository)(implicit val ec: ExecutionContext) {
+
   def processNotification(msgId: String, status: SendingStatus): Future[UpdateResult] = {
 
     def doUpdate(id: String, status: SendingStatus): Future[UpdateSuccessResult.type] = {
@@ -35,7 +35,7 @@ class NotificationService @Inject()(soapMessageStatusRepository: SoapMessageStat
     }
 
     soapMessageStatusRepository.findById(msgId).flatMap {
-      case None => Future.successful(MessageIdNotFoundResult)
+      case None                       => Future.successful(MessageIdNotFoundResult)
       case Some(_: SoapMessageStatus) => doUpdate(msgId, status)
     }
   }

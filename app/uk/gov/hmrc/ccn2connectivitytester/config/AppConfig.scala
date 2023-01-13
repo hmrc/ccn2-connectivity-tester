@@ -17,22 +17,22 @@
 package uk.gov.hmrc.ccn2connectivitytester.config
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-
 import scala.concurrent.duration.Duration
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
+import play.api.Configuration
 
-  val appName: String = config.get[String]("appName")
-  val outboundSoapUrl: String = config.get[String]("microservice.services.api-platform-outbound-soap.host")
-  val notificationUrl: String = config.get[String]("notification.url")
-  val wsdlUrlForV1 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
-  val wsdlUrlForV2 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
-  val checkInterval: Duration = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
-  val checkInitialDelay: Duration = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
-  val checkJobLockDuration: Duration = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
+@Singleton
+class AppConfig @Inject() (config: Configuration) {
+
+  val appName: String                              = config.get[String]("appName")
+  val outboundSoapUrl: String                      = config.get[String]("microservice.services.api-platform-outbound-soap.host")
+  val notificationUrl: String                      = config.get[String]("notification.url")
+  val wsdlUrlForV1                                 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
+  val wsdlUrlForV2                                 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
+  val checkInterval: Duration                      = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
+  val checkInitialDelay: Duration                  = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
+  val checkJobLockDuration: Duration               = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
   val confirmationWaitDuration: java.time.Duration = java.time.Duration.parse(config.getOptional[String]("confirmation.wait.duration").getOrElse("PT12H"))
-  val parallelism: Int = config.getOptional[Int]("expired.parallelism").getOrElse(5)
+  val parallelism: Int                             = config.getOptional[Int]("expired.parallelism").getOrElse(5)
 
 }

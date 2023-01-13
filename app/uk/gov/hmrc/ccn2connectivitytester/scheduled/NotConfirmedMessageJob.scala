@@ -16,24 +16,28 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
 import javax.inject.{Inject, Singleton}
-import play.api.Logging
-import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
-import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
-class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRepository: MongoLockRepository,
-                                       soapMessageStatusRepository: SoapMessageStatusRepository)
-                                      (implicit val ec: ExecutionContext, mat: Materializer)
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
 
-  extends LockedScheduledJob with Logging {
+import play.api.Logging
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
+import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+
+@Singleton
+class NotConfirmedMessageJob @Inject() (
+    appConfig: AppConfig,
+    override val lockRepository: MongoLockRepository,
+    soapMessageStatusRepository: SoapMessageStatusRepository
+  )(implicit val ec: ExecutionContext,
+    mat: Materializer
+  ) extends LockedScheduledJob with Logging {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "NotConfirmedMessageJob"
@@ -51,6 +55,7 @@ class NotConfirmedMessageJob @Inject()(appConfig: AppConfig, override val lockRe
     }
 
     soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(
-      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)).map(done => Result("OK"))
+      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
+    ).map(done => Result("OK"))
   }
 }

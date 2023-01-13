@@ -17,6 +17,9 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future.successful
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -24,21 +27,19 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.http.Status.ACCEPTED
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future.successful
-import scala.concurrent.duration.{Duration, FiniteDuration}
 
 class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-  with MockitoSugar with ArgumentMatchersSugar {
+    with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
@@ -49,9 +50,9 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
     .build()
 
   trait Setup {
-    val appConfigMock: AppConfig = mock[AppConfig]
+    val appConfigMock: AppConfig                         = mock[AppConfig]
     val mockMongoRepository: SoapMessageStatusRepository = mock[SoapMessageStatusRepository]
-    val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
+    val mongoLockRepository: MongoLockRepository         = mock[MongoLockRepository]
   }
 
   "NotConfirmedMessageJob" should {
@@ -66,7 +67,7 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
       when(mockMongoRepository.updateSendingStatus(message.messageId, SendingStatus.ALERTED)).thenReturn(successful(Some(message.copy(status = SendingStatus.ALERTED))))
       when(mockMongoRepository.retrieveMessagesMissingConfirmation).thenReturn(Source.future(successful(message)))
 
-      val underTest = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
+      val underTest                = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
       val result: underTest.Result = await(underTest.execute)
 
       result.message shouldBe "Job named NotConfirmedMessageJob ran and completed with result OK"

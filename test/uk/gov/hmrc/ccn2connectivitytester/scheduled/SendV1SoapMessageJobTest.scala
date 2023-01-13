@@ -16,28 +16,30 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
-import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
 import scala.concurrent.duration.FiniteDuration
 
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
+import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V1
+import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
+
 class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-  with MockitoSugar with ArgumentMatchersSugar {
+    with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -48,10 +50,10 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
     .build()
 
   trait Setup {
-    val appConfigMock: AppConfig = mock[AppConfig]
+    val appConfigMock: AppConfig                     = mock[AppConfig]
     val outboundSoapConnector: OutboundSoapConnector = mock[OutboundSoapConnector]
-    val mockOutboundService: OutboundService = mock[OutboundService]
-    val mongoLockRepository: MongoLockRepository = mock[MongoLockRepository]
+    val mockOutboundService: OutboundService         = mock[OutboundService]
+    val mongoLockRepository: MongoLockRepository     = mock[MongoLockRepository]
   }
 
   "SendV1SoapMessageJobTest" should {
@@ -62,7 +64,7 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
 
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
       when(mockOutboundService.sendTestMessage(V1)) thenReturn Future(SuccessResult)
-      val underTest = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
+      val underTest                = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
       val result: underTest.Result = await(underTest.execute)
       result.message shouldBe "Job named SendV1SoapMessageJob ran and completed with result SuccessResult"
       verify(mockOutboundService).sendTestMessage(V1)

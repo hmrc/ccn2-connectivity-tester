@@ -17,19 +17,19 @@
 package uk.gov.hmrc.ccn2connectivitytester.connectors
 
 import java.net.URL
-
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Logging
 import play.api.http.HeaderNames.CONTENT_TYPE
-import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
 import uk.gov.hmrc.http._
 
-import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 
 @Singleton()
-class OutboundSoapConnector @Inject()(appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class OutboundSoapConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
   lazy val destinationUri: String = appConfig.outboundSoapUrl
 
   def sendRequestAndProcessResponse(request: String, destinationUrl: String = destinationUri): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
