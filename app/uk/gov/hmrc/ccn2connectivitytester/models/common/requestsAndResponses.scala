@@ -43,10 +43,10 @@ class Requests @Inject() (appConfig: AppConfig) {
        |{"wsdlUrl":"${appConfig.wsdlUrlForV1}",
        | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
        | "addressing": {
-       |  "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
-       |  "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
-       |  "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
-       |  "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF",
+       |  "to":"${appConfig.addressingV1To}",
+       |  "from":"${appConfig.addressingV1From}",
+       |  "replyTo":"${appConfig.addressingV1From}",
+       |  "faultTo":"${appConfig.addressingV1From}",
        |  "messageId":"$messageId"
        |  },
        |  "confirmationOfDelivery": true,
@@ -61,10 +61,10 @@ class Requests @Inject() (appConfig: AppConfig) {
        |{"wsdlUrl":"${appConfig.wsdlUrlForV2}",
        | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
        | "addressing": {
-       |   "to":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR_V2.CONF",
-       |   "from":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
-       |   "replyTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
-       |   "faultTo":"partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF",
+       |   "to":"${appConfig.addressingV2To}",
+       |   "from":"${appConfig.addressingV2From}",
+       |   "replyTo":"${appConfig.addressingV2From}",
+       |   "faultTo":"${appConfig.addressingV2From}",
        |   "messageId":"$messageId"
        | },
        |  "confirmationOfDelivery": true,
