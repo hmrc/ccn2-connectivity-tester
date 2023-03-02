@@ -64,13 +64,13 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     "successfully send a V1 message" in new Setup {
       val successResponse = new SoapMessageStatus(UUID.randomUUID(), "message Id", SendingStatus.SENT, ACCEPTED)
       when(requestsMock.getV1Request).thenReturn("blah")
-      when(connectorMock.sendRequestAndProcessResponse(*, *)).thenReturn(Future(Right(successResponse)))
+      when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(Future(Right(successResponse)))
       when(repoMock.persist(*)).thenReturn(Future(InsertOneResult.acknowledged(BsonNumber(1))))
 
       val result = await(underTest.sendTestMessage(V1))
 
       result shouldBe SuccessResult
-      verify(connectorMock).sendRequestAndProcessResponse("blah", "")
+      verify(connectorMock).sendOutboundSoapRequest("blah", "")
       verify(repoMock).persist(successResponse)
       verify(requestsMock).getV1Request
       verifyNoMoreInteractions(requestsMock)
@@ -79,12 +79,12 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
 
     "handle failing to send a message" in new Setup {
       when(requestsMock.getV1Request).thenReturn("blah")
-      when(connectorMock.sendRequestAndProcessResponse(*, *)).thenReturn(successful(Left(UpstreamErrorResponse("unexpected error", INTERNAL_SERVER_ERROR))))
+      when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(successful(Left(UpstreamErrorResponse("unexpected error", INTERNAL_SERVER_ERROR))))
 
       val result = await(underTest.sendTestMessage(V1))
 
       result shouldBe FailResult
-      verify(connectorMock).sendRequestAndProcessResponse("blah", "")
+      verify(connectorMock).sendOutboundSoapRequest("blah", "")
       verify(requestsMock).getV1Request
       verifyNoMoreInteractions(requestsMock)
       verifyNoMoreInteractions(repoMock)
@@ -93,13 +93,13 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     "successfully send a V2 message" in new Setup {
       val successResponse = new SoapMessageStatus(UUID.randomUUID(), "message Id", SendingStatus.SENT, ACCEPTED)
       when(requestsMock.getV2Request).thenReturn("blah")
-      when(connectorMock.sendRequestAndProcessResponse(*, *)).thenReturn(Future(Right(successResponse)))
+      when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(Future(Right(successResponse)))
       when(repoMock.persist(*)).thenReturn(Future(InsertOneResult.acknowledged(BsonNumber(1))))
 
       val result = await(underTest.sendTestMessage(V2))
 
       result shouldBe SuccessResult
-      verify(connectorMock).sendRequestAndProcessResponse("blah", "")
+      verify(connectorMock).sendOutboundSoapRequest("blah", "")
       verify(repoMock).persist(successResponse)
       verify(requestsMock).getV2Request
       verifyNoMoreInteractions(requestsMock)

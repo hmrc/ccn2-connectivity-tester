@@ -19,9 +19,10 @@ package uk.gov.hmrc.ccn2connectivitytester.repositories
 import java.time.Instant
 import java.time.Instant.now
 import java.util.concurrent.TimeUnit
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
 import akka.NotUsed
 import akka.stream.alpakka.mongodb.scaladsl.MongoSource
 import akka.stream.scaladsl.Source
@@ -32,15 +33,14 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result.InsertOneResult
-
 import play.api.Logging
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
+import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus._
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, _}
 
 @Singleton
 class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, appConfig: AppConfig)(implicit ec: ExecutionContext)
@@ -80,6 +80,12 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
     MongoSource(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(equal("status", SendingStatus.SENT.entryName), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+      .find(filter = and(equal("status", SENT.entryName), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+  }
+
+  def retrieveMessagesInErrorState: Source[SoapMessageStatus, NotUsed] = {
+   val errorStates = List(FAILED.entryName, COE.entryName)
+    MongoSource(collection.withReadPreference(primaryPreferred())
+      .find(filter = and(in("status", errorStates:_*), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 }

@@ -40,10 +40,11 @@ class OutboundService @Inject() (
       case Version.V2 => requests.getV2Request
     }
 
-    outboundConnector.sendRequestAndProcessResponse(requestToSend) map { response =>
+    outboundConnector.sendOutboundSoapRequest(requestToSend) map { response =>
       response match {
         case Right(soapMessageStatus)                               =>
           soapMessageStatusRepository.persist(soapMessageStatus)
+          logger.info(s"Sending message with messageId [${soapMessageStatus.messageId}] received response code of ${soapMessageStatus.ccnHttpStatus}")
           SuccessResult
         case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>
           logger.warn(s"Error $message and status code $statusCode")

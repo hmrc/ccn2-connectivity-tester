@@ -36,7 +36,7 @@ class NotificationController @Inject() (cc: ControllerComponents, notificationSe
     withJsonBody[SoapMessageStatus] { messageRequest =>
       notificationService.processNotification(messageRequest.messageId, messageRequest.status) map {
         case UpdateSuccessResult     =>
-          logger.debug(s"Received notification $messageRequest")
+          logger.info(s"Received notification for messageId ${messageRequest.messageId}. Status is ${messageRequest.status}")
           Ok
         case MessageIdNotFoundResult =>
           logger.warn(s"Received notification for unknown ID $messageRequest.messageId")

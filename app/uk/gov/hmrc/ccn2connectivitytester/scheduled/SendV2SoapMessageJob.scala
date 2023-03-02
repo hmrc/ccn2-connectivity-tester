@@ -31,7 +31,7 @@ class SendV2SoapMessageJob @Inject() (appConfig: AppConfig, override val lockRep
     extends LockedScheduledJob {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
-  override def name: String = "SendV2SoapMessageJob"
+  override def name: String = "Scheduled Job sending V2 SOAP messages"
 
   override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
 

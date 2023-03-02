@@ -17,9 +17,6 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future.successful
-import scala.concurrent.duration.{Duration, FiniteDuration}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -27,18 +24,20 @@ import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
 import play.api.Application
-import play.api.http.Status.ACCEPTED
+import play.api.http.Status.{ACCEPTED, BAD_REQUEST}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
-class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future.successful
+import scala.concurrent.duration.{Duration, FiniteDuration}
+
+class MessageInErrorJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
@@ -55,9 +54,9 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
     val mongoLockRepository: MongoLockRepository         = mock[MongoLockRepository]
   }
 
-  "NotConfirmedMessageJob" should {
-    "process messages that have not received confirmations" in new Setup {
-      val message = new SoapMessageStatus(UUID.randomUUID(), "some id", SendingStatus.SENT, ACCEPTED)
+  "MessageInErrorJob" should {
+    "process messages that are in an error state" in new Setup {
+      val message = new SoapMessageStatus(UUID.randomUUID(), "some id", SendingStatus.FAILED, BAD_REQUEST)
       when(appConfigMock.parallelism).thenReturn(2)
       when(appConfigMock.checkJobLockDuration).thenReturn(Duration("5s"))
       when(appConfigMock.checkInterval).thenReturn(Duration("5s"))
@@ -66,13 +65,13 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
       when(mockMongoRepository.updateSendingStatus(message.messageId, SendingStatus.ALERTED))
         .thenReturn(successful(Some(message.copy(status = SendingStatus.ALERTED))))
-      when(mockMongoRepository.retrieveMessagesMissingConfirmation).thenReturn(Source.future(successful(message)))
+      when(mockMongoRepository.retrieveMessagesInErrorState).thenReturn(Source.future(successful(message)))
 
-      val underTest                = new NotConfirmedMessageJob(appConfigMock, mongoLockRepository, mockMongoRepository)
+      val underTest                = new MessageInErrorJob(appConfigMock, mongoLockRepository, mockMongoRepository)
       val result: underTest.Result = await(underTest.execute)
 
-      result.message shouldBe "Job named Scheduled Job seeking messages without CoD ran and completed with result OK"
-      verify(mockMongoRepository).retrieveMessagesMissingConfirmation
+      result.message shouldBe "Job named Scheduled Job seeking messages in error state ran and completed with result OK"
+      verify(mockMongoRepository).retrieveMessagesInErrorState
       verify(mockMongoRepository).updateSendingStatus(message.messageId, SendingStatus.ALERTED)
       verifyNoMoreInteractions(mockMongoRepository)
     }

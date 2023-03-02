@@ -65,7 +65,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, successResponse)
-        val response        = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response        = await(underTest.sendOutboundSoapRequest(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId
@@ -88,7 +88,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, retryingResponse)
-        val response         = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response         = await(underTest.sendOutboundSoapRequest(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId
@@ -111,7 +111,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
              |}
              |""".stripMargin
         setupPostForCCNWithResponseBody("/message", 200, failResponse)
-        val response     = await(underTest.sendRequestAndProcessResponse(version._2, wireMockUrl))
+        val response     = await(underTest.sendOutboundSoapRequest(version._2, wireMockUrl))
         response.isRight shouldBe true
         response.map(sms => {
           sms.messageId shouldBe messageId
@@ -125,7 +125,7 @@ class OutboundSoapConnectorISpec extends AnyWordSpec
     Seq("V1-request", "V2-request") foreach { version =>
       s"handle NotFound for $version messages" in new Setup {
         setupPostForCCN("/message", 404)
-        val response = await(underTest.sendRequestAndProcessResponse(version, wireMockUrl))
+        val response = await(underTest.sendOutboundSoapRequest(version, wireMockUrl))
         response.isLeft shouldBe true
       }
     }

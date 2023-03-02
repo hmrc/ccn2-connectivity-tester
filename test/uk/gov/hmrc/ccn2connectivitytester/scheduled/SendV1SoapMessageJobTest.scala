@@ -66,9 +66,8 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
       when(mockOutboundService.sendTestMessage(V1)) thenReturn Future(SuccessResult)
       val underTest                = new SendV1SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
       val result: underTest.Result = await(underTest.execute)
-      result.message shouldBe "Job named SendV1SoapMessageJob ran and completed with result SuccessResult"
+      result.message shouldBe "Job named Scheduled Job sending V1 SOAP messages ran and completed with result SuccessResult"
       verify(mockOutboundService).sendTestMessage(V1)
     }
   }
-
 }
