@@ -37,9 +37,10 @@ class Scheduler @Inject() (
     override val application: Application,
     sendV1MessageJob: SendV1SoapMessageJob,
     sendV2MessageJob: SendV2SoapMessageJob,
-    notConfirmedMessageJob: NotConfirmedMessageJob
+    notConfirmedMessageJob: NotConfirmedMessageJob,
+    messageInErrorJob: MessageInErrorJob
   )(
     override implicit val ec: ExecutionContext
   ) extends RunningOfScheduledJobs {
-  override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV1MessageJob, sendV2MessageJob, notConfirmedMessageJob)
+  override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV1MessageJob, sendV2MessageJob, notConfirmedMessageJob, messageInErrorJob)
 }

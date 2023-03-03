@@ -32,7 +32,7 @@ import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 class OutboundSoapConnector @Inject() (appConfig: AppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
   lazy val destinationUri: String = appConfig.outboundSoapUrl
 
-  def sendRequestAndProcessResponse(request: String, destinationUrl: String = destinationUri): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
+  def sendOutboundSoapRequest(request: String, destinationUrl: String = destinationUri): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
     implicit val hc: HeaderCarrier = HeaderCarrier().withExtraHeaders(CONTENT_TYPE -> "application/json")
 
     postRequest(destinationUrl, request)

@@ -29,8 +29,15 @@ The requests look much like:
 An explanation of the various parts of this request can be found in the api-platform-outbound-soap service's README. 
 The response to this request is stored by this service and when the requested confirmation of delivery message is received
 on the notification endpoint, the message is marked as complete.
+
 In the event that this confirmation should not be received, there is a further scheduled job which will pick up all the 
 messages in this state and will log one message at `WARN` level for each of them.
+
+If the request to api-platform-outbound-soap returns a `FAILED` status, this will be stored in Mongo then picked up by a 
+scheduled job that will, again, log one message at `WARN` level for each instance. This same job will do the same for
+any message which has had a `CoE` message delivered on the notification endpoint, since a `CoE` means that the request 
+could not be processed by CCN2.
+
 
 ## How to run it locally
 This service requires only `api-platform-outbound-soap` and `import-control-wsdls` to be running.

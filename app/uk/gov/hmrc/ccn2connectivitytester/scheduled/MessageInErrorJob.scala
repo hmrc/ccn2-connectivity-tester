@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
-
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-
+import javax.inject.{Inject, Singleton}
 import play.api.Logging
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NotConfirmedMessageJob @Inject() (
+class MessageInErrorJob @Inject()(
     appConfig: AppConfig,
     override val lockRepository: MongoLockRepository,
     soapMessageStatusRepository: SoapMessageStatusRepository
@@ -40,7 +38,7 @@ class NotConfirmedMessageJob @Inject() (
   ) extends LockedScheduledJob with Logging {
   override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
-  override def name: String = "Scheduled Job seeking messages without CoD"
+  override def name: String = "Scheduled Job seeking messages in error state"
 
   override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
 
@@ -49,12 +47,12 @@ class NotConfirmedMessageJob @Inject() (
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
       soapMessageStatusRepository.updateSendingStatus(soapMessageStatus.messageId, SendingStatus.ALERTED)
-      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] has not received confirmation of " +
-        s"delivery since it was created at ${soapMessageStatus.createDateTime}")
+      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] is in a state of ${soapMessageStatus.status} " +
+        s"and it has not been possible to deliver it since it was created at ${soapMessageStatus.createDateTime}")
       Future.unit
     }
 
-    soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(
+    soapMessageStatusRepository.retrieveMessagesInErrorState.runWith(
       Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
     ).map(done => Result("OK"))
   }
