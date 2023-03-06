@@ -6,6 +6,8 @@ Upon receiving these requests api-platform-outbound-soap makes a SOAP request to
 Since these CoD (confirmation of delivery) messages are sent asynchronously, the receipt of one proves the entire round
 trip from HMRC to CCN2 and in the other direction.
 
+![alt text](ICS2.png)
+
 ## How it works
 Every time the timer fires, the service sends one V1 request and one V2 request. 
 The requests look much like:
