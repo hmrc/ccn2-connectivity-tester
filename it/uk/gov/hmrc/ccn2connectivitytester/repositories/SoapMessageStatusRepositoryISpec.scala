@@ -25,7 +25,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import org.mongodb.scala.MongoWriteException
 import org.mongodb.scala.ReadPreference.primaryPreferred
-import org.mongodb.scala.bson.{BsonBoolean, BsonInt64}
+import org.mongodb.scala.bson.BsonBoolean
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.matchers.should.Matchers
@@ -101,7 +101,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       val Some(ttlIndex) = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "ttlIndex")
       ttlIndex.get("unique") shouldBe None
       ttlIndex.get("background").get shouldBe BsonBoolean(true)
-      ttlIndex.get("expireAfterSeconds") shouldBe Some(BsonInt64(60 * 60 * 24 * 30))
+      ttlIndex.get("expireAfterSeconds").get.asNumber.intValue shouldBe 60 * 60 * 24 * 30
     }
 
     "message is persisted with unique ID" in {
