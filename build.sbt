@@ -24,3 +24,12 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalafixConfigSettings(IntegrationTest))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
+
+commands ++= Seq(
+  Command.command("run-all-tests") { state => "test" :: "IntegrationTest/test" :: state },
+
+  Command.command("clean-and-test") { state => "clean" :: "compile" :: "run-all-tests" :: state },
+
+  // Coverage does not need compile !
+  Command.command("pre-commit") { state => "clean" :: "scalafmtAll" :: "scalafixAll" :: "coverage" :: "run-all-tests" :: "coverageOff" :: "coverageAggregate" :: state }
+)
