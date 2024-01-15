@@ -31,20 +31,22 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.http.Status.{ACCEPTED, FORBIDDEN}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.models
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+
+import uk.gov.hmrc.ccn2connectivitytester.models
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 
 class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoRepositorySupport[SoapMessageStatus] with Matchers with BeforeAndAfterEach with GuiceOneAppPerSuite
     with IntegrationPatience {
   override protected val repository: PlayMongoRepository[SoapMessageStatus] = app.injector.instanceOf[SoapMessageStatusRepository]
 
-  val serviceRepo = repository.asInstanceOf[SoapMessageStatusRepository]
+  val serviceRepo                             = repository.asInstanceOf[SoapMessageStatusRepository]
   override implicit lazy val app: Application = appBuilder.build()
   val ccnHttpStatus: Int                      = 200
   val sentStatusMessage                       = SoapMessageStatus(randomUUID, "some message ID", SendingStatus.SENT, ccnHttpStatus)
@@ -52,7 +54,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
   val coeStatusMessage                        = SoapMessageStatus(randomUUID, "some message ID", SendingStatus.COE, ccnHttpStatus)
   val retryingStatusMessage                   = SoapMessageStatus(randomUUID, "some message ID", SendingStatus.RETRYING, ccnHttpStatus)
 
-  implicit val materialiser: Materializer     = app.injector.instanceOf[Materializer]
+  implicit val materialiser: Materializer = app.injector.instanceOf[Materializer]
 
   override def beforeEach(): Unit = {
     prepareDatabase()
@@ -253,7 +255,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       retrieved.head.messageId shouldBe unconfirmedMessageId
       retrieved.head.ccnHttpStatus shouldBe FORBIDDEN
       retrieved.head.createDateTime shouldBe unconfirmedCreated.truncatedTo(ChronoUnit.MILLIS)
-      }
+    }
 
     "retrieve expired messages with status of COE" in {
       val unconfirmedGlobalId  = UUID.randomUUID()
@@ -269,12 +271,12 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       retrieved.head.messageId shouldBe unconfirmedMessageId
       retrieved.head.ccnHttpStatus shouldBe FORBIDDEN
       retrieved.head.createDateTime shouldBe unconfirmedCreated.truncatedTo(ChronoUnit.MILLIS)
-      }
+    }
 
     "retrieve expired messages with status of COE or status of FAILED" in {
-      val unconfirmedCoeGlobalId  = UUID.randomUUID()
-      val unconfirmedCoeMessageId = "second message ID"
-      val unconfirmedCoeCreated   = java.time.Instant.now().minus(Period.ofDays(5))
+      val unconfirmedCoeGlobalId     = UUID.randomUUID()
+      val unconfirmedCoeMessageId    = "second message ID"
+      val unconfirmedCoeCreated      = java.time.Instant.now().minus(Period.ofDays(5))
       val unconfirmedFailedGlobalId  = UUID.randomUUID()
       val unconfirmedFailedMessageId = "second message ID"
       val unconfirmedFailedCreated   = java.time.Instant.now().minus(Period.ofDays(5))
@@ -285,15 +287,15 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       val retrieved = await(serviceRepo.retrieveMessagesInErrorState.runWith(Sink.seq[SoapMessageStatus]))
 
       retrieved.size shouldBe 2
-      retrieved.map(_.globalId) should contain (unconfirmedCoeGlobalId)
-      retrieved.map(_.messageId) should contain (unconfirmedCoeMessageId)
-      retrieved.map(_.ccnHttpStatus) should contain (FORBIDDEN)
-      retrieved.map(_.createDateTime) should contain (unconfirmedCoeCreated.truncatedTo(ChronoUnit.MILLIS))
-      retrieved.map(_.globalId) should contain (unconfirmedFailedGlobalId)
-      retrieved.map(_.messageId) should contain (unconfirmedFailedMessageId)
-      retrieved.map(_.ccnHttpStatus) should contain (FORBIDDEN)
-      retrieved.map(_.createDateTime) should contain (unconfirmedFailedCreated.truncatedTo(ChronoUnit.MILLIS))
-      }
+      retrieved.map(_.globalId) should contain(unconfirmedCoeGlobalId)
+      retrieved.map(_.messageId) should contain(unconfirmedCoeMessageId)
+      retrieved.map(_.ccnHttpStatus) should contain(FORBIDDEN)
+      retrieved.map(_.createDateTime) should contain(unconfirmedCoeCreated.truncatedTo(ChronoUnit.MILLIS))
+      retrieved.map(_.globalId) should contain(unconfirmedFailedGlobalId)
+      retrieved.map(_.messageId) should contain(unconfirmedFailedMessageId)
+      retrieved.map(_.ccnHttpStatus) should contain(FORBIDDEN)
+      retrieved.map(_.createDateTime) should contain(unconfirmedFailedCreated.truncatedTo(ChronoUnit.MILLIS))
+    }
 
     "ignore unexpired messages with status of COE" in {
       val unconfirmedGlobalId  = UUID.randomUUID()
@@ -318,5 +320,5 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
 
       retrieved.size shouldBe 0
     }
-    }
   }
+}
