@@ -74,18 +74,18 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
     collection.withReadPreference(primaryPreferred())
       .findOneAndUpdate(
         filter = equal("messageId", Codecs.toBson(messageId)),
-        update = set("status", Codecs.toBson(newStatus.entryName)),
+        update = set("status", Codecs.toBson(newStatus.toString())),
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       ).toFutureOption()
   }
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
     MongoSource(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(equal("status", SENT.entryName), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+      .find(filter = and(equal("status", SENT.toString()), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 
   def retrieveMessagesInErrorState: Source[SoapMessageStatus, NotUsed] = {
-    val errorStates = List(FAILED.entryName, COE.entryName)
+    val errorStates = List(FAILED.toString(), COE.toString())
     MongoSource(collection.withReadPreference(primaryPreferred())
       .find(filter = and(in("status", errorStates: _*), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }

@@ -11,8 +11,7 @@ object AppDependencies {
   val compile = Seq(
     "uk.gov.hmrc"             %% "bootstrap-backend-play-28"   % bootstrapVersion,
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"          % hmrcMongoVersion,
-    "com.lightbend.akka"      %% "akka-stream-alpakka-mongodb" % "4.0.0",
-    "com.beachape"            %% "enumeratum-play-json"        % "1.7.0"
+    "com.lightbend.akka"      %% "akka-stream-alpakka-mongodb" % "4.0.0"
   )
 
   val test = Seq(
