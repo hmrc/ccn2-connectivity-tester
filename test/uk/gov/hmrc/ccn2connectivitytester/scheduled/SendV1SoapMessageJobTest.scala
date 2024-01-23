@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
@@ -30,7 +31,7 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
+import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
@@ -58,7 +59,7 @@ class SendV1SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
 
   "SendV1SoapMessageJobTest" should {
     "invoke sending V1 message on OutboundSoapConnector" in new Setup {
-      when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(true))
+      when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(Some(Lock("", "", Instant.now, Instant.now))))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(mockOutboundService.sendTestMessage(*)).thenReturn(successful(SuccessResult))
 
