@@ -40,8 +40,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus._
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, _}
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 
 @Singleton
 class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, appConfig: AppConfig)(implicit ec: ExecutionContext)
@@ -81,11 +80,11 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
     MongoSource(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(equal("status", SENT.toString()), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+      .find(filter = and(equal("status", Codecs.toBson(SendingStatus.SENT.toString())), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 
   def retrieveMessagesInErrorState: Source[SoapMessageStatus, NotUsed] = {
-    val errorStates = List(FAILED.toString(), COE.toString())
+    val errorStates = List(Codecs.toBson(SendingStatus.FAILED.toString()), Codecs.toBson(SendingStatus.COE.toString()))
     MongoSource(collection.withReadPreference(primaryPreferred())
       .find(filter = and(in("status", errorStates: _*), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }

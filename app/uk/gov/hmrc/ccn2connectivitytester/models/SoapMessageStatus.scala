@@ -21,6 +21,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 import play.api.libs.json._
+import uk.gov.hmrc.apiplatform.modules.common.domain.services.SealedTraitJsonFormatting
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 final case class SoapMessageStatus(
@@ -61,8 +62,6 @@ object SoapMessageStatus {
 }
 
 sealed trait StatusType
-
-object StatusType {}
 
 sealed trait SendingStatus extends StatusType
 
