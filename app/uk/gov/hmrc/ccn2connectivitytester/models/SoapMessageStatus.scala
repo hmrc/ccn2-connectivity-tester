@@ -19,11 +19,9 @@ package uk.gov.hmrc.ccn2connectivitytester.models
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import scala.collection.immutable
-
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
 import play.api.libs.json._
+import uk.gov.hmrc.apiplatform.modules.common.domain.services.SealedTraitJsonFormatting
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 final case class SoapMessageStatus(
@@ -63,27 +61,21 @@ object SoapMessageStatus {
   implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
 }
 
-sealed abstract class StatusType extends EnumEntry
+sealed trait StatusType
 
-object StatusType extends Enum[StatusType] with PlayJsonEnum[StatusType] {
-  val values: immutable.IndexedSeq[StatusType] = findValues
-}
+sealed trait SendingStatus extends StatusType
 
-sealed abstract class SendingStatus(override val entryName: String) extends StatusType
+object SendingStatus {
+  case object SENT     extends SendingStatus
+  case object FAILED   extends SendingStatus
+  case object RETRYING extends SendingStatus
+  case object ALERTED  extends SendingStatus
+  case object COE      extends SendingStatus
+  case object COD      extends SendingStatus
 
-object SendingStatus extends Enum[SendingStatus] with PlayJsonEnum[SendingStatus] {
-  val values: immutable.IndexedSeq[SendingStatus] = findValues
+  val values: Set[SendingStatus] = Set(SENT, FAILED, RETRYING, ALERTED, COE, COD)
 
-  case object SENT extends SendingStatus("SENT")
+  def apply(text: String): Option[SendingStatus] = SendingStatus.values.find(_.toString() == text.toUpperCase)
 
-  case object FAILED extends SendingStatus("FAILED")
-
-  case object RETRYING extends SendingStatus("RETRYING")
-
-  case object ALERTED extends SendingStatus("ALERTED")
-
-  case object COE extends SendingStatus("COE")
-
-  case object COD extends SendingStatus("COD")
-
+  implicit val format: Format[SendingStatus] = SealedTraitJsonFormatting.createFormatFor[SendingStatus]("Sending Status", apply)
 }

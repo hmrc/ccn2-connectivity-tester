@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
+import java.time.Instant
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
@@ -32,7 +33,7 @@ import play.api.Application
 import play.api.http.Status.ACCEPTED
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
+import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
@@ -61,7 +62,7 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
       when(appConfigMock.parallelism).thenReturn(2)
       when(appConfigMock.checkJobLockDuration).thenReturn(Duration("5s"))
       when(appConfigMock.checkInterval).thenReturn(Duration("5s"))
-      when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(true))
+      when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(Some(Lock("", "", Instant.now, Instant.now))))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
       when(mockMongoRepository.updateSendingStatus(message.messageId, SendingStatus.ALERTED))

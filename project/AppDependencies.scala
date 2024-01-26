@@ -5,14 +5,15 @@ import sbt._
 
 object AppDependencies {
 
-  private val bootstrapVersion = "7.14.0"
-  private val hmrcMongoVersion = "1.0.0"
+  private val bootstrapVersion    = "7.14.0"
+  private val hmrcMongoVersion    = "1.7.0"
+  private val commonDomainVersion = "0.10.0"
 
   val compile = Seq(
     "uk.gov.hmrc"             %% "bootstrap-backend-play-28"   % bootstrapVersion,
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"          % hmrcMongoVersion,
     "com.lightbend.akka"      %% "akka-stream-alpakka-mongodb" % "4.0.0",
-    "com.beachape"            %% "enumeratum-play-json"        % "1.7.0"
+    "uk.gov.hmrc"             %% "api-platform-common-domain"  % commonDomainVersion
   )
 
   val test = Seq(

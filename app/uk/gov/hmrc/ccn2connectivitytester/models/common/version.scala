@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.models.common
 
-import enumeratum._
+import scala.collection.immutable.ListSet
 
-sealed trait Version extends EnumEntry
+sealed trait Version
 
-object Version extends Enum[Version] {
-
-  val values = findValues
-
+object Version {
   case object V1 extends Version
-
   case object V2 extends Version
 
+  val values: ListSet[Version] = ListSet[Version](V1, V2)
+
+  def apply(text: String): Option[Version] = Version.values.find(_.toString() == text.toUpperCase)
 }
