@@ -1,28 +1,21 @@
-import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
 import sbt._
 
 object AppDependencies {
 
-  private val bootstrapVersion    = "7.14.0"
+  private val bootstrapVersion    = "8.4.0"
   private val hmrcMongoVersion    = "1.7.0"
-  private val commonDomainVersion = "0.10.0"
+  private val commonDomainVersion = "0.11.0"
 
   val compile = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-backend-play-28"   % bootstrapVersion,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"          % hmrcMongoVersion,
-    "com.lightbend.akka"      %% "akka-stream-alpakka-mongodb" % "4.0.0",
+    "uk.gov.hmrc"             %% "bootstrap-backend-play-30"   % bootstrapVersion,
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-30"          % hmrcMongoVersion,
+    "org.apache.pekko"        %% "pekko-connectors-mongodb"    % "1.0.2",
     "uk.gov.hmrc"             %% "api-platform-common-domain"  % commonDomainVersion
   )
 
   val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-28"     % bootstrapVersion,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"    % hmrcMongoVersion,
-    "org.scalatestplus.play"  %% "scalatestplus-play"         % "5.1.0",
-    "org.mockito"             %% "mockito-scala-scalatest"    % "1.17.29",
-    "org.scalatest"           %% "scalatest"                  % "3.2.17",
-    "com.github.tomakehurst"  %  "wiremock-jre8-standalone"   % "2.35.0",
-    "com.vladsch.flexmark"    %  "flexmark-all"               % "0.62.2"
+    "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion,
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % hmrcMongoVersion,
+    "org.mockito"             %% "mockito-scala-scalatest"    % "1.17.29"
   ).map(_ % "test, it")
 }

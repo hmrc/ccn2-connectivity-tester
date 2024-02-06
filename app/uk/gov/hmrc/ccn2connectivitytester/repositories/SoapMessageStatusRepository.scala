@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-import akka.NotUsed
-import akka.stream.alpakka.mongodb.scaladsl.MongoSource
-import akka.stream.scaladsl.Source
+import org.apache.pekko.NotUsed
+import org.apache.pekko.stream.connectors.mongodb.scaladsl.MongoSource
+import org.apache.pekko.stream.scaladsl.Source
 import org.mongodb.scala.ReadPreference.primaryPreferred
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.Filters.{equal, or, _}
