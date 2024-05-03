@@ -56,6 +56,6 @@ class NotConfirmedMessageJob @Inject() (
 
     soapMessageStatusRepository.retrieveMessagesMissingConfirmation.runWith(
       Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
-    ).map(done => Result("OK"))
+    ).map(_ => Result("OK"))
   }
 }

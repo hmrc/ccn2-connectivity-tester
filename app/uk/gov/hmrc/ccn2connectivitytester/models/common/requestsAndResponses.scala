@@ -37,26 +37,8 @@ case object RetryingResult extends SendResult
 
 class Requests @Inject() (appConfig: AppConfig) {
 
-  def getV1Request: String = {
-    val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V1"
-    s"""
-       |{"wsdlUrl":"${appConfig.wsdlUrlForV1}",
-       | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,
-       | "addressing": {
-       |  "to":"${appConfig.addressingV1To}",
-       |  "from":"${appConfig.addressingV1From}",
-       |  "replyTo":"${appConfig.addressingV1From}",
-       |  "faultTo":"${appConfig.addressingV1From}",
-       |  "messageId":"$messageId"
-       |  },
-       |  "confirmationOfDelivery": true,
-       |  "notificationUrl": "${appConfig.notificationUrl}"
-       |}
-    """.stripMargin
-  }
-
   def getV2Request: String = {
-    val messageId = s"ISALIVE-${Instant.now().getEpochSecond()}-V2"
+    val messageId = s"ISALIVE-${Instant.now().getEpochSecond}-V2"
     s"""
        |{"wsdlUrl":"${appConfig.wsdlUrlForV2}",
        | "wsdlOperation":"IsAlive", "messageBody":"", "confirmationOfDelivery": true,

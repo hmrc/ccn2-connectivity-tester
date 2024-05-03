@@ -9,11 +9,11 @@ trip from HMRC to CCN2 and in the other direction.
 ![alt text](ICS2.png)
 
 ## How it works
-Every time the timer fires, the service sends one V1 request and one V2 request. 
+Every time the timer fires, the service sends one V2 request. 
 The requests look much like:
 ```
 {
- "wsdlUrl": "https://import-control-wsdls.protected.mdtp/assets/eu/outbound/CR-for-NES-Services/BusinessActivityService/ICS/RiskAnalysisOrchestrationBAS/V1/CCN2.Service.Customs.Default.ICS.RiskAnalysisOrchestrationBAS_1.0.0_CCN2_1.0.0.wsdl",
+ "wsdlUrl": "https://import-control-wsdls.protected.mdtp/assets/eu/outbound/CR-for-NES-Services/BusinessActivityService/ICS/RiskAnalysisOrchestrationBAS/V2/CCN2.Service.Customs.Default.ICS.RiskAnalysisOrchestrationBAS_1.0.0_CCN2_1.0.0.wsdl",
  "wsdlOperation":"IsAlive",
  "messageBody":"", 
  "confirmationOfDelivery": true,
@@ -22,7 +22,7 @@ The requests look much like:
   "from":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
   "replyTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
   "faultTo":"partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF",
-  "messageId":"ISALIVE-0123456789-V1"
+  "messageId":"ISALIVE-0123456789-V2"
   },
   "confirmationOfDelivery": true,
   "notificationUrl": "https://ccn2-connectivity-tester.mdtp.protected/notification"

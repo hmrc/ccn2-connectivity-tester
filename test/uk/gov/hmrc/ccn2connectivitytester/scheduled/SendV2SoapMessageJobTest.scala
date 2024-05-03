@@ -36,7 +36,6 @@ import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V2
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 
 class SendV2SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
@@ -61,14 +60,14 @@ class SendV2SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
     "invoke sending V2 message on OutboundSoapConnector" in new Setup {
       when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(Some(Lock("", "", Instant.now, Instant.now))))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
-      when(mockOutboundService.sendTestMessage(*)).thenReturn(successful(SuccessResult))
+      when(mockOutboundService.sendTestMessage()).thenReturn(successful(SuccessResult))
 
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
-      when(mockOutboundService.sendTestMessage(V2)) thenReturn Future(SuccessResult)
+      when(mockOutboundService.sendTestMessage()) thenReturn Future(SuccessResult)
       val underTest                = new SendV2SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)
       val result: underTest.Result = await(underTest.execute)
       result.message shouldBe "Job named Scheduled Job sending V2 SOAP messages ran and completed with result SuccessResult"
-      verify(mockOutboundService).sendTestMessage(V2)
+      verify(mockOutboundService).sendTestMessage()
     }
   }
 }

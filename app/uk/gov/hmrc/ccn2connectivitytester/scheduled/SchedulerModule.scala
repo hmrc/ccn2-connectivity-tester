@@ -35,12 +35,11 @@ class SchedulerModule extends AbstractModule {
 class Scheduler @Inject() (
     override val applicationLifecycle: ApplicationLifecycle,
     override val application: Application,
-    sendV1MessageJob: SendV1SoapMessageJob,
     sendV2MessageJob: SendV2SoapMessageJob,
     notConfirmedMessageJob: NotConfirmedMessageJob,
     messageInErrorJob: MessageInErrorJob
   )(
     override implicit val ec: ExecutionContext
   ) extends RunningOfScheduledJobs {
-  override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV1MessageJob, sendV2MessageJob, notConfirmedMessageJob, messageInErrorJob)
+  override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV2MessageJob, notConfirmedMessageJob, messageInErrorJob)
 }
