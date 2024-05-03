@@ -34,22 +34,17 @@ class OutboundService @Inject() (
   )(implicit val ec: ExecutionContext
   ) extends HttpErrorFunctions with Logging {
 
-  def sendTestMessage(version: Version): Future[SendResult] = {
-    val requestToSend = version match {
-      case Version.V1 => requests.getV1Request
-      case Version.V2 => requests.getV2Request
-    }
+  def sendTestMessage(): Future[SendResult] = {
+    val requestToSend = requests.getV2Request
 
-    outboundConnector.sendOutboundSoapRequest(requestToSend) map { response =>
-      response match {
-        case Right(soapMessageStatus)                               =>
-          soapMessageStatusRepository.persist(soapMessageStatus)
-          logger.info(s"Sending message with messageId [${soapMessageStatus.messageId}] received response code of ${soapMessageStatus.ccnHttpStatus}")
-          SuccessResult
-        case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>
-          logger.warn(s"Error $message and status code $statusCode")
-          FailResult
-      }
+    outboundConnector.sendOutboundSoapRequest(requestToSend) map {
+      case Right(soapMessageStatus)                               =>
+        soapMessageStatusRepository.persist(soapMessageStatus)
+        logger.info(s"Sending message with messageId [${soapMessageStatus.messageId}] received response code of ${soapMessageStatus.ccnHttpStatus}")
+        SuccessResult
+      case Left(UpstreamErrorResponse(message, statusCode, _, _)) =>
+        logger.warn(s"Error $message and status code $statusCode")
+        FailResult
     }
   }
 }

@@ -37,7 +37,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models._
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.{V1, V2}
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
 
@@ -61,42 +60,27 @@ class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
   }
 
   "sendMessage" should {
-    "successfully send a V1 message" in new Setup {
-      val successResponse = new SoapMessageStatus(UUID.randomUUID(), "message Id", SendingStatus.SENT, ACCEPTED)
-      when(requestsMock.getV1Request).thenReturn("blah")
-      when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(Future(Right(successResponse)))
-      when(repoMock.persist(*)).thenReturn(Future(InsertOneResult.acknowledged(BsonNumber(1))))
-
-      val result = await(underTest.sendTestMessage(V1))
-
-      result shouldBe SuccessResult
-      verify(connectorMock).sendOutboundSoapRequest("blah", "")
-      verify(repoMock).persist(successResponse)
-      verify(requestsMock).getV1Request
-      verifyNoMoreInteractions(requestsMock)
-      verifyNoMoreInteractions(repoMock)
-    }
 
     "handle failing to send a message" in new Setup {
-      when(requestsMock.getV1Request).thenReturn("blah")
+      when(requestsMock.getV2Request).thenReturn("blah")
       when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(successful(Left(UpstreamErrorResponse("unexpected error", INTERNAL_SERVER_ERROR))))
 
-      val result = await(underTest.sendTestMessage(V1))
+      val result = await(underTest.sendTestMessage())
 
       result shouldBe FailResult
       verify(connectorMock).sendOutboundSoapRequest("blah", "")
-      verify(requestsMock).getV1Request
+      verify(requestsMock).getV2Request
       verifyNoMoreInteractions(requestsMock)
       verifyNoMoreInteractions(repoMock)
     }
 
-    "successfully send a V2 message" in new Setup {
+    "successfully send a message" in new Setup {
       val successResponse = new SoapMessageStatus(UUID.randomUUID(), "message Id", SendingStatus.SENT, ACCEPTED)
       when(requestsMock.getV2Request).thenReturn("blah")
       when(connectorMock.sendOutboundSoapRequest(*, *)).thenReturn(Future(Right(successResponse)))
       when(repoMock.persist(*)).thenReturn(Future(InsertOneResult.acknowledged(BsonNumber(1))))
 
-      val result = await(underTest.sendTestMessage(V2))
+      val result = await(underTest.sendTestMessage())
 
       result shouldBe SuccessResult
       verify(connectorMock).sendOutboundSoapRequest("blah", "")

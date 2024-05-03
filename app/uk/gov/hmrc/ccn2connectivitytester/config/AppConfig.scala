@@ -23,14 +23,11 @@ import play.api.Configuration
 
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
-  val addressingV1From: String                     = config.getOptional[String]("addressing.v1.from").getOrElse("partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES.CONF")
-  val addressingV1To: String                       = config.getOptional[String]("addressing.v1.to").getOrElse("partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR.CONF")
   val addressingV2From: String                     = config.getOptional[String]("addressing.v2.from").getOrElse("partner:CCN2.Partner.XI.Customs.TAXUD/ICS_NES_V2.CONF")
   val addressingV2To: String                       = config.getOptional[String]("addressing.v2.to").getOrElse("partner:CCN2.Partner.EU.Customs.TAXUD/ICS_CR_V2.CONF")
   val appName: String                              = config.get[String]("appName")
   val outboundSoapUrl: String                      = config.get[String]("microservice.services.api-platform-outbound-soap.host")
   val notificationUrl: String                      = config.get[String]("notification.url")
-  val wsdlUrlForV1                                 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v1")
   val wsdlUrlForV2                                 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
   val checkInterval: Duration                      = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
   val checkInitialDelay: Duration                  = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))

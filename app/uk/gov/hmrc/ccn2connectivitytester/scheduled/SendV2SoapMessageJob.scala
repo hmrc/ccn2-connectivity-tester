@@ -23,7 +23,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Version.V2
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 
 @Singleton
@@ -38,6 +37,6 @@ class SendV2SoapMessageJob @Inject() (appConfig: AppConfig, override val lockRep
   override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
-    outboundService.sendTestMessage(V2).map(done => Result(done.toString))
+    outboundService.sendTestMessage().map(done => Result(done.toString))
   }
 }
