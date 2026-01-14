@@ -23,7 +23,6 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import org.apache.pekko.NotUsed
-import org.apache.pekko.stream.connectors.mongodb.scaladsl.MongoSource
 import org.apache.pekko.stream.scaladsl.Source
 import org.mongodb.scala.ReadPreference.primaryPreferred
 import org.mongodb.scala.bson.collection.immutable.Document
@@ -79,13 +78,13 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
   }
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
-    MongoSource(collection.withReadPreference(primaryPreferred())
+    Source.fromPublisher(collection.withReadPreference(primaryPreferred())
       .find(filter = and(equal("status", Codecs.toBson(SendingStatus.SENT.toString())), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 
   def retrieveMessagesInErrorState: Source[SoapMessageStatus, NotUsed] = {
     val errorStates = List(Codecs.toBson(SendingStatus.FAILED.toString()), Codecs.toBson(SendingStatus.COE.toString()))
-    MongoSource(collection.withReadPreference(primaryPreferred())
+    Source.fromPublisher(collection.withReadPreference(primaryPreferred())
       .find(filter = and(in("status", errorStates: _*), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 }
