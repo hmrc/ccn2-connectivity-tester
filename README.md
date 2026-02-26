@@ -6,16 +6,23 @@ Upon receiving these requests api-platform-outbound-soap makes a SOAP request to
 Since these CoD (confirmation of delivery) messages are sent asynchronously, the receipt of one proves the entire round
 trip from HMRC to CCN2 and in the other direction.
 
+A successful connectivity test is represented by the following sequence diagram:
 
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+sequenceDiagram
+    ccn2-connectivity-tester->>api-platform-outbound-soap: create isAlive SOAP message(name of WSDL)
+    api-platform-outbound-soap->>import-control-wsdls: get named WSDL
+    api-platform-outbound-soap->>api-platform-outbound-soap: ensure operation exists in WSDL
+    api-platform-outbound-soap->>api-platform-outbound-soap: build isAlive SOAP message 
+    api-platform-outbound-soap->>MongoDB: store isAlive SOAP message 
+    api-platform-outbound-soap->>CCN2: attempt send
+    api-platform-outbound-soap->>MongoDB: update stored message with response code
+    CCN2->>api-platform-outbound-soap: async delivery confirmation
+    api-platform-outbound-soap->>MongoDB: update stored message with confirmation
+    api-platform-outbound-soap->>ccn2-connectivity-tester: notify confirmation received
+    ccn2-connectivity-tester->>MongoDB: update stored message with confirmation
+    
 ```
-
-![alt text](ICS2.png)
 
 ## How it works
 Every time the timer fires, the service sends one V2 request. 
@@ -42,7 +49,8 @@ The response to this request is stored by this service and when the requested co
 on the notification endpoint, the message is marked as complete.
 
 In the event that this confirmation should not be received, there is a further scheduled job which will pick up all the 
-messages in this state and will log one message at `WARN` level for each of them.
+messages in this state and will log one message at `WARN` level for each of them. Some configuration in [the alert config repo](https://github.com/hmrc/alert-config)
+looks for these log messages and triggers PagerDuty alerts when they're found.
 
 If the request to api-platform-outbound-soap returns a `FAILED` status, this will be stored in Mongo then picked up by a 
 scheduled job that will, again, log one message at `WARN` level for each instance. This same job will do the same for
