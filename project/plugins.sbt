@@ -8,7 +8,7 @@ addSbtPlugin("org.playframework" % "sbt-plugin"             % "3.0.10")
 addSbtPlugin("org.scoverage"     % "sbt-scoverage"          % "2.3.1")
 addSbtPlugin("org.scalastyle"    % "scalastyle-sbt-plugin"  % "1.0.0")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"           % "2.5.2")
-addSbtPlugin("ch.epfl.scala"     % "sbt-scalafix"           % "0.14.2")
+addSbtPlugin("ch.epfl.scala"     % "sbt-scalafix"           % "0.14.5")
 addSbtPlugin("ch.epfl.scala"     % "sbt-bloop"              % "2.0.17")
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
