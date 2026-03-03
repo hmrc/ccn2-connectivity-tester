@@ -4,8 +4,8 @@ object AppDependencies {
 
   def apply(): Seq[ModuleID] = compile ++ test
 
-  private val bootstrapVersion    = "10.5.0"
-  private val hmrcMongoVersion    = "2.11.0"
+  private val bootstrapVersion    = "10.6.0"
+  private val hmrcMongoVersion    = "2.12.0"
   private val commonDomainVersion = "0.19.0"
 
   val compile = Seq(
