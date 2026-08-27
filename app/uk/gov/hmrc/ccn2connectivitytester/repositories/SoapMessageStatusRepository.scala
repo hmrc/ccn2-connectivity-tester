@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.repositories
 
-import java.time.Instant
 import java.time.Instant.now
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
@@ -26,7 +25,7 @@ import org.apache.pekko.NotUsed
 import org.apache.pekko.stream.scaladsl.Source
 import org.mongodb.scala.ReadPreference.primaryPreferred
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Filters.{equal, or, _}
+import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
@@ -35,7 +34,6 @@ import org.mongodb.scala.result.InsertOneResult
 import play.api.Logging
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
@@ -57,7 +55,6 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
         )
       )
     ) with Logging {
-  implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   def persist(entity: SoapMessageStatus): Future[InsertOneResult] = {
     collection.insertOne(entity).toFuture()
@@ -72,19 +69,19 @@ class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, app
     collection.withReadPreference(primaryPreferred())
       .findOneAndUpdate(
         filter = equal("messageId", Codecs.toBson(messageId)),
-        update = set("status", Codecs.toBson(newStatus.toString())),
+        update = set("status", Codecs.toBson(newStatus.toString)),
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       ).toFutureOption()
   }
 
   def retrieveMessagesMissingConfirmation: Source[SoapMessageStatus, NotUsed] = {
     Source.fromPublisher(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(equal("status", Codecs.toBson(SendingStatus.SENT.toString())), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+      .find(filter = and(equal("status", Codecs.toBson(SendingStatus.SENT.toString)), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 
   def retrieveMessagesInErrorState: Source[SoapMessageStatus, NotUsed] = {
-    val errorStates = List(Codecs.toBson(SendingStatus.FAILED.toString()), Codecs.toBson(SendingStatus.COE.toString()))
+    val errorStates = List(Codecs.toBson(SendingStatus.FAILED.toString), Codecs.toBson(SendingStatus.COE.toString))
     Source.fromPublisher(collection.withReadPreference(primaryPreferred())
-      .find(filter = and(in("status", errorStates: _*), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
+      .find(filter = and(in("status", errorStates *), and(lte("createDateTime", now().minus(appConfig.confirmationWaitDuration))))))
   }
 }

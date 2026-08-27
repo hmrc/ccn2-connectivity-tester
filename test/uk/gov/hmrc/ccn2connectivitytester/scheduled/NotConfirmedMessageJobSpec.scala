@@ -20,7 +20,7 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
@@ -60,8 +60,9 @@ class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOne
     "process messages that have not received confirmations" in new Setup {
       val message = new SoapMessageStatus(UUID.randomUUID(), "some id", SendingStatus.SENT, ACCEPTED)
       when(appConfigMock.parallelism).thenReturn(2)
-      when(appConfigMock.checkJobLockDuration).thenReturn(Duration("5s"))
-      when(appConfigMock.checkInterval).thenReturn(Duration("5s"))
+      when(appConfigMock.scheduledJobEnabled).thenReturn(true)
+      when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(5, SECONDS))
+      when(appConfigMock.checkInterval).thenReturn(FiniteDuration(5, SECONDS))
       when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(Some(Lock("", "", Instant.now, Instant.now))))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))

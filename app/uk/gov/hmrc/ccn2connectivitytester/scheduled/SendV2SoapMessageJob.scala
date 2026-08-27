@@ -26,11 +26,12 @@ import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 
 @Singleton
-class SendV2SoapMessageJob @Inject() (appConfig: AppConfig, override val lockRepository: MongoLockRepository, outboundService: OutboundService)
+class SendV2SoapMessageJob @Inject() (appConfig: AppConfig, override val mongoLockRepository: MongoLockRepository, outboundService: OutboundService)
     extends LockedScheduledJob {
-  override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "Scheduled Job sending V2 SOAP messages"
+
+  override def enabled: Boolean = appConfig.scheduledJobEnabled
 
   override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
 

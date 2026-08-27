@@ -33,18 +33,19 @@ import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusReposito
 @Singleton
 class NotConfirmedMessageJob @Inject() (
     appConfig: AppConfig,
-    override val lockRepository: MongoLockRepository,
+    override val mongoLockRepository: MongoLockRepository,
     soapMessageStatusRepository: SoapMessageStatusRepository
   )(implicit val ec: ExecutionContext,
     mat: Materializer
   ) extends LockedScheduledJob with Logging {
-  override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "Scheduled Job seeking messages without CoD"
 
-  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
+  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay
 
-  override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
+  override def interval: FiniteDuration = appConfig.checkInterval
+
+  override def enabled: Boolean = appConfig.scheduledJobEnabled
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {

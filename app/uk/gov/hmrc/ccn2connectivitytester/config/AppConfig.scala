@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ccn2connectivitytester.config
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 import play.api.Configuration
 
@@ -29,9 +29,10 @@ class AppConfig @Inject() (config: Configuration) {
   val outboundSoapUrl: String                      = config.get[String]("microservice.services.api-platform-outbound-soap.host")
   val notificationUrl: String                      = config.get[String]("notification.url")
   val wsdlUrlForV2                                 = config.get[String]("microservice.services.api-platform-outbound-soap.wsdl-url.v2")
-  val checkInterval: Duration                      = Duration(config.getOptional[String]("check.interval").getOrElse("60 sec"))
-  val checkInitialDelay: Duration                  = Duration(config.getOptional[String]("check.initial.delay").getOrElse("30 sec"))
-  val checkJobLockDuration: Duration               = Duration(config.getOptional[String]("check.lock.duration").getOrElse("15 min"))
+  val scheduledJobEnabled: Boolean                 = config.getOptional[Boolean]("scheduledJob.enabled").getOrElse(true)
+  val checkInterval: FiniteDuration                = Duration(config.getOptional[String]("scheduledJob.check.interval").getOrElse("60 sec")).asInstanceOf[FiniteDuration]
+  val checkInitialDelay: FiniteDuration            = Duration(config.getOptional[String]("scheduledJob.check.initial.delay").getOrElse("30 sec")).asInstanceOf[FiniteDuration]
+  val checkJobLockDuration: FiniteDuration         = Duration(config.getOptional[String]("scheduledJob.check.lock.duration").getOrElse("15 min")).asInstanceOf[FiniteDuration]
   val confirmationWaitDuration: java.time.Duration = java.time.Duration.parse(config.getOptional[String]("confirmation.wait.duration").getOrElse("PT12H"))
   val parallelism: Int                             = config.getOptional[Int]("expired.parallelism").getOrElse(5)
 

@@ -62,6 +62,8 @@ class SendV2SoapMessageJobTest extends AnyWordSpec with Matchers with GuiceOneAp
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(mockOutboundService.sendTestMessage()).thenReturn(successful(SuccessResult))
 
+      when(appConfigMock.scheduledJobEnabled).thenReturn(true)
+      when(appConfigMock.checkInterval).thenReturn(FiniteDuration(5, "secs"))
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
       when(mockOutboundService.sendTestMessage()) thenReturn Future(SuccessResult)
       val underTest                = new SendV2SoapMessageJob(appConfigMock, mongoLockRepository, mockOutboundService)

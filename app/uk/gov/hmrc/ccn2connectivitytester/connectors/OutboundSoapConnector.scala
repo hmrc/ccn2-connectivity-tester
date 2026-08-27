@@ -21,6 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.Logging
 import play.api.http.HeaderNames.CONTENT_TYPE
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
 import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.client.HttpClientV2

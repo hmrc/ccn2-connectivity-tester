@@ -33,18 +33,17 @@ import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusReposito
 @Singleton
 class MessageInErrorJob @Inject() (
     appConfig: AppConfig,
-    override val lockRepository: MongoLockRepository,
+    override val mongoLockRepository: MongoLockRepository,
     soapMessageStatusRepository: SoapMessageStatusRepository
   )(implicit val ec: ExecutionContext,
     mat: Materializer
   ) extends LockedScheduledJob with Logging {
-  override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
 
   override def name: String = "Scheduled Job seeking messages in error state"
 
-  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
+  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay
 
-  override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
+  override def interval: FiniteDuration = appConfig.checkInterval
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
@@ -56,6 +55,8 @@ class MessageInErrorJob @Inject() (
 
     soapMessageStatusRepository.retrieveMessagesInErrorState.runWith(
       Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
-    ).map(done => Result("OK"))
+    ).map(_ => Result("OK"))
   }
+
+  override def enabled: Boolean = appConfig.scheduledJobEnabled
 }
