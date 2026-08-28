@@ -22,12 +22,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logging
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
-import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.client.HttpClientV2
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.HttpReadsInstances.{readEitherOf, readFromJson}
+import uk.gov.hmrc.http.client.HttpClientV2
 
 @Singleton()
 class OutboundSoapConnector @Inject() (appConfig: AppConfig, httpClient: HttpClientV2)(implicit ec: ExecutionContext) extends Logging {
@@ -40,7 +39,8 @@ class OutboundSoapConnector @Inject() (appConfig: AppConfig, httpClient: HttpCli
   }
 
   private def postRequest(destinationUrl: String, request: String)(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, SoapMessageStatus]] = {
-    httpClient.post(url"$destinationUrl/message")
+    httpClient
+      .post(url"$destinationUrl/message")
       .withBody(request)
       .execute[Either[UpstreamErrorResponse, SoapMessageStatus]]
   }

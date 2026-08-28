@@ -20,7 +20,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.apiplatform.modules.common.domain.services.SimpleEnumJsonFormatting
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -30,7 +30,7 @@ final case class SoapMessageStatus(
     status: SendingStatus,
     ccnHttpStatus: Int,
     createDateTime: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
-  )
+)
 
 object SoapMessageStatus {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
@@ -48,7 +48,7 @@ object SoapMessageStatus {
     )(SoapMessageStatus.apply)
   }
 
-  val writes: OWrites[SoapMessageStatus]            = {
+  val writes: OWrites[SoapMessageStatus]             = {
     import play.api.libs.functional.syntax._
 
     (
@@ -59,7 +59,7 @@ object SoapMessageStatus {
         (__ \ "createDateTime").write[Instant]
     )(sms => (sms.globalId, sms.messageId, sms.status, sms.ccnHttpStatus, sms.createDateTime))
   }
-  implicit val formatter: Format[SoapMessageStatus] = Format(reads, writes)
+  implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
 }
 
 sealed trait StatusType

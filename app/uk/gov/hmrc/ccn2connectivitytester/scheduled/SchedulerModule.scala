@@ -36,6 +36,6 @@ class ScheduledJobsProvider @Inject() (
     sendV2SoapMessageJob: SendV2SoapMessageJob,
     notConfirmedMessageJob: NotConfirmedMessageJob,
     messageInErrorJob: MessageInErrorJob
-  ) extends Provider[ScheduledJobs] {
+) extends Provider[ScheduledJobs] {
   override def get(): ScheduledJobs = ScheduledJobs(List(sendV2SoapMessageJob, notConfirmedMessageJob, messageInErrorJob))
 }

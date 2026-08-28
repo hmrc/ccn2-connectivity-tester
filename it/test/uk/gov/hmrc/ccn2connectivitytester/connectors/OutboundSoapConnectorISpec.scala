@@ -24,20 +24,22 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import play.api.Application
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Requests
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 
-import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Requests
-
-class OutboundSoapConnectorISpec extends AnyWordSpec
+class OutboundSoapConnectorISpec
+    extends AnyWordSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
-    with GuiceOneAppPerSuite with WireMockSupport with WiremockTestSupport {
+    with GuiceOneAppPerSuite
+    with WireMockSupport
+    with WiremockTestSupport {
   val requests = app.injector.instanceOf[Requests]
 
   override def fakeApplication(): Application =

@@ -22,7 +22,7 @@ lazy val microservice = Project(appName, file("."))
     // suppress warnings in generated routes files
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
-  .settings(CodeCoverageSettings.settings)
+  .settings(ScoverageSettings())
 
 lazy val it = (project in file("it"))
   .enablePlugins(PlayScala)

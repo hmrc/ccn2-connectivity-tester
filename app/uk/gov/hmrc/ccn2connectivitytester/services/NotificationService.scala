@@ -29,8 +29,8 @@ class NotificationService @Inject() (soapMessageStatusRepository: SoapMessageSta
   def processNotification(msgId: String, status: SendingStatus): Future[UpdateResult] = {
 
     def doUpdate(id: String, status: SendingStatus): Future[UpdateSuccessResult.type] = {
-      soapMessageStatusRepository.updateSendingStatus(id, status) map {
-        case _ => UpdateSuccessResult
+      soapMessageStatusRepository.updateSendingStatus(id, status) map { case _ =>
+        UpdateSuccessResult
       }
     }
 

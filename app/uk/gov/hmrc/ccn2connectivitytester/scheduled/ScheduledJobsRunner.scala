@@ -33,9 +33,9 @@ class ScheduledJobsRunner @Inject() (
     application: Application,
     applicationLifecycle: ApplicationLifecycle,
     scheduledJobs: ScheduledJobs
-  )(implicit
+)(implicit
     val ec: ExecutionContext
-  ) extends Logging {
+) extends Logging {
 
   val scheduler: Scheduler = application.actorSystem.scheduler
 

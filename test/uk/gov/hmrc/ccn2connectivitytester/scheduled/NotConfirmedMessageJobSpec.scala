@@ -33,14 +33,12 @@ import play.api.Application
 import play.api.http.Status.ACCEPTED
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
-class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-    with MockitoSugar with ArgumentMatchersSugar {
+class NotConfirmedMessageJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
