@@ -30,15 +30,14 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.mvc.Http.Status.ACCEPTED
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
-import uk.gov.hmrc.ccn2connectivitytester.models._
+import uk.gov.hmrc.ccn2connectivitytester.models.*
 import uk.gov.hmrc.ccn2connectivitytester.models.common.{FailResult, Requests, SuccessResult}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 class OutboundServiceSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
   implicit val hc: HeaderCarrier = HeaderCarrier()

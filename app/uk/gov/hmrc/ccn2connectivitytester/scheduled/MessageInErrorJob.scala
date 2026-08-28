@@ -24,38 +24,42 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
 
 import play.api.Logging
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 @Singleton
 class MessageInErrorJob @Inject() (
     appConfig: AppConfig,
-    override val lockRepository: MongoLockRepository,
+    override val mongoLockRepository: MongoLockRepository,
     soapMessageStatusRepository: SoapMessageStatusRepository
-  )(implicit val ec: ExecutionContext,
-    mat: Materializer
-  ) extends LockedScheduledJob with Logging {
-  override val releaseLockAfter: FiniteDuration = appConfig.checkJobLockDuration.asInstanceOf[FiniteDuration]
+)(implicit val ec: ExecutionContext, mat: Materializer)
+    extends LockedScheduledJob
+    with Logging {
 
   override def name: String = "Scheduled Job seeking messages in error state"
 
-  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay.asInstanceOf[FiniteDuration]
+  override def initialDelay: FiniteDuration = appConfig.checkInitialDelay
 
-  override def interval: FiniteDuration = appConfig.checkInterval.asInstanceOf[FiniteDuration]
+  override def interval: FiniteDuration = appConfig.checkInterval
 
   override def executeInLock(implicit ec: ExecutionContext): Future[Result] = {
     def logMessageDetails(soapMessageStatus: SoapMessageStatus) = {
       soapMessageStatusRepository.updateSendingStatus(soapMessageStatus.messageId, SendingStatus.ALERTED)
-      logger.warn(s"Message with messageId [${soapMessageStatus.messageId}] is in a state of ${soapMessageStatus.status} " +
-        s"and it has not been possible to deliver it since it was created at ${soapMessageStatus.createDateTime}")
+      logger.warn(
+        s"Message with messageId [${soapMessageStatus.messageId}] is in a state of ${soapMessageStatus.status} " +
+          s"and it has not been possible to deliver it since it was created at ${soapMessageStatus.createDateTime}"
+      )
       Future.unit
     }
 
-    soapMessageStatusRepository.retrieveMessagesInErrorState.runWith(
-      Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
-    ).map(done => Result("OK"))
+    soapMessageStatusRepository.retrieveMessagesInErrorState
+      .runWith(
+        Sink.foreachAsync[SoapMessageStatus](appConfig.parallelism)(logMessageDetails)
+      )
+      .map(_ => Result("OK"))
   }
+
+  override def enabled: Boolean = appConfig.scheduledJobEnabled
 }

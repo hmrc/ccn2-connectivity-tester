@@ -21,30 +21,32 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-trait LockedScheduledJob {
-
-  lazy val lockKeeper: LockService = LockService(lockRepository, lockId = s"$name-scheduled-job-lock", ttl = 1.hour)
-  val releaseLockAfter: FiniteDuration
-  val lockRepository: MongoLockRepository
-
+trait LockedScheduledJob extends ScheduledJob {
   def name: String
 
   def initialDelay: FiniteDuration
 
   def interval: FiniteDuration
 
-  def executeInLock(implicit ec: ExecutionContext): Future[this.Result]
+  def enabled: Boolean
+
+  def executeInLock(implicit ec: ExecutionContext): Future[Result]
+
+  val mongoLockRepository: MongoLockRepository
+
+  // Lock for 10 minutes longer than the interval to allow for retries and timeouts
+  lazy val lockService: LockService = LockService(mongoLockRepository, lockId = s"$name-lock", ttl = interval + 10.minutes)
 
   final def execute(implicit ec: ExecutionContext): Future[Result] =
-    lockKeeper.withLock {
-      executeInLock
-    } map {
-      case Some(Result(msg)) => Result(s"Job named $name ran and completed with result $msg")
-      case None              => Result(s"Job named $name cannot acquire mongo lock so did not run")
+    if (enabled) {
+      lockService.withLock {
+        executeInLock
+      } map {
+        case Some(Result(message)) => Result(s"Job named $name ran and completed with result $message")
+        case None                  => Result(s"Job named $name cannot acquire Mongo lock, not running")
+      }
+    } else {
+      Future.successful(Result(s"Job named $name is disabled"))
     }
-
-  override def toString() = s"Scheduled job named $name, initially pausing for $initialDelay then running every $interval"
-
-  case class Result(message: String)
 
 }

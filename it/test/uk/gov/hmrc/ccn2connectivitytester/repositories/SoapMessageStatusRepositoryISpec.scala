@@ -20,6 +20,7 @@ import java.time.Period
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.UUID.randomUUID
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
@@ -36,13 +37,18 @@ import play.api.Application
 import play.api.http.Status.{ACCEPTED, FORBIDDEN}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.ccn2connectivitytester.models
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
+import uk.gov.hmrc.mongo.logging.ObservableFutureImplicits.ObservableFuture
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
 
-import uk.gov.hmrc.ccn2connectivitytester.models
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
-
-class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoRepositorySupport[SoapMessageStatus] with Matchers with BeforeAndAfterEach with GuiceOneAppPerSuite
+class SoapMessageStatusRepositoryISpec
+    extends AnyWordSpec
+    with PlayMongoRepositorySupport[SoapMessageStatus]
+    with Matchers
+    with BeforeAndAfterEach
+    with GuiceOneAppPerSuite
     with IntegrationPatience {
   override protected val repository: PlayMongoRepository[SoapMessageStatus] = app.injector.instanceOf[SoapMessageStatusRepository]
 
@@ -100,7 +106,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "message is persisted with TTL" in {
       await(serviceRepo.persist(sentStatusMessage))
 
-      val Some(ttlIndex) = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "ttlIndex")
+      val ttlIndex = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "ttlIndex").get
       ttlIndex.get("unique") shouldBe None
       ttlIndex.get("background").get shouldBe BsonBoolean(true)
       ttlIndex.get("expireAfterSeconds").get.asNumber.intValue shouldBe 60 * 60 * 24 * 30
@@ -109,7 +115,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "message is persisted with unique ID" in {
       await(serviceRepo.persist(sentStatusMessage))
 
-      val Some(globalIdIndex) = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "globalIdIndex")
+      val globalIdIndex = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "globalIdIndex").get
       globalIdIndex.get("unique") shouldBe Some(BsonBoolean(true))
       globalIdIndex.get("background").get shouldBe BsonBoolean(true)
     }
@@ -117,7 +123,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "create index on message ID" in {
       await(serviceRepo.persist(sentStatusMessage))
 
-      val Some(globalIdIndex) = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "messageIdIndex")
+      val globalIdIndex = await(serviceRepo.collection.listIndexes().toFuture()).find(i => i.get("name").get.asString().getValue == "messageIdIndex").get
       globalIdIndex.get("unique") shouldBe None
       globalIdIndex.get("background").get shouldBe BsonBoolean(true)
     }
@@ -136,7 +142,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
   "updateStatus" should {
     "update the message to have a status of FAILED" in {
       await(serviceRepo.persist(retryingStatusMessage))
-      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.FAILED))
+      val returnedStatusMessage = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.FAILED)).get
 
       val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
       fetchedRecords.size shouldBe 1
@@ -148,7 +154,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
 
     "update the message to have a status of SENT" in {
       await(serviceRepo.persist(retryingStatusMessage))
-      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.SENT))
+      val returnedStatusMessage = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.SENT)).get
 
       val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
       fetchedRecords.size shouldBe 1
@@ -159,7 +165,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     }
     "update the message to have a status of CoD" in {
       await(serviceRepo.persist(retryingStatusMessage))
-      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COD))
+      val returnedStatusMessage = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COD)).get
 
       val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
       fetchedRecords.size shouldBe 1
@@ -170,7 +176,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     }
     "update the message to have a status of CoE" in {
       await(serviceRepo.persist(retryingStatusMessage))
-      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COE))
+      val returnedStatusMessage = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.COE)).get
 
       val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
       fetchedRecords.size shouldBe 1
@@ -181,7 +187,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     }
     "update the message to have a status of ALERTED" in {
       await(serviceRepo.persist(retryingStatusMessage))
-      val Some(returnedStatusMessage) = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.ALERTED))
+      val returnedStatusMessage = await(serviceRepo.updateSendingStatus(retryingStatusMessage.messageId, SendingStatus.ALERTED)).get
 
       val fetchedRecords = await(serviceRepo.collection.withReadPreference(primaryPreferred()).find().toFuture())
       fetchedRecords.size shouldBe 1
@@ -196,7 +202,7 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
     "find a message that exists" in {
       await(serviceRepo.persist(sentStatusMessage))
 
-      val Some(returnedMessage) = await(serviceRepo.findById(sentStatusMessage.messageId))
+      val returnedMessage = await(serviceRepo.findById(sentStatusMessage.messageId)).get
 
       returnedMessage.messageId shouldBe sentStatusMessage.messageId
     }
@@ -229,10 +235,10 @@ class SoapMessageStatusRepositoryISpec extends AnyWordSpec with PlayMongoReposit
       val unconfirmedMessageId = "message to ignore"
       val unconfirmedCreated   = java.time.Instant.now().minus(Period.ofDays(5))
       await(serviceRepo.persist(sentStatusMessage))
-      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"${unconfirmedMessageId}-1", SendingStatus.FAILED, ACCEPTED, unconfirmedCreated)))
-      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"${unconfirmedMessageId}-2", SendingStatus.RETRYING, ACCEPTED, unconfirmedCreated)))
-      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"${unconfirmedMessageId}-3", SendingStatus.COE, ACCEPTED, unconfirmedCreated)))
-      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"${unconfirmedMessageId}-4", SendingStatus.COD, ACCEPTED, unconfirmedCreated)))
+      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"$unconfirmedMessageId-1", SendingStatus.FAILED, ACCEPTED, unconfirmedCreated)))
+      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"$unconfirmedMessageId-2", SendingStatus.RETRYING, ACCEPTED, unconfirmedCreated)))
+      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"$unconfirmedMessageId-3", SendingStatus.COE, ACCEPTED, unconfirmedCreated)))
+      await(serviceRepo.persist(new models.SoapMessageStatus(UUID.randomUUID(), s"$unconfirmedMessageId-4", SendingStatus.COD, ACCEPTED, unconfirmedCreated)))
 
       val retrieved = await(serviceRepo.retrieveMessagesMissingConfirmation.runWith(Sink.seq[SoapMessageStatus]))
 

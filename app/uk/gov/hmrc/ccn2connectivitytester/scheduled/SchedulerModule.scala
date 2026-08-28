@@ -17,29 +17,25 @@
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
-import com.google.inject.AbstractModule
+import com.google.inject.Provider
 
-import play.api.Application
-import play.api.inject.ApplicationLifecycle
+import play.api.inject.Module
+import play.api.{Configuration, Environment}
 
-class SchedulerModule extends AbstractModule {
+class SchedulerModule extends Module {
 
-  override def configure(): Unit = {
-    bind(classOf[Scheduler]).asEagerSingleton()
-  }
+  override def bindings(environment: Environment, configuration: Configuration) = Seq(
+    bind[ScheduledJobs].toProvider[ScheduledJobsProvider],
+    bind[ScheduledJobsRunner].toSelf.eagerly()
+  )
 }
 
 @Singleton
-class Scheduler @Inject() (
-    override val applicationLifecycle: ApplicationLifecycle,
-    override val application: Application,
-    sendV2MessageJob: SendV2SoapMessageJob,
+class ScheduledJobsProvider @Inject() (
+    sendV2SoapMessageJob: SendV2SoapMessageJob,
     notConfirmedMessageJob: NotConfirmedMessageJob,
     messageInErrorJob: MessageInErrorJob
-  )(
-    override implicit val ec: ExecutionContext
-  ) extends RunningOfScheduledJobs {
-  override lazy val scheduledJobs: Seq[LockedScheduledJob] = Seq(sendV2MessageJob, notConfirmedMessageJob, messageInErrorJob)
+) extends Provider[ScheduledJobs] {
+  override def get(): ScheduledJobs = ScheduledJobs(List(sendV2SoapMessageJob, notConfirmedMessageJob, messageInErrorJob))
 }

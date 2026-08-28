@@ -6,7 +6,7 @@ val appName = "ccn2-connectivity-tester"
 Global / bloopAggregateSourceDependencies := true
 Global / bloopExportJarClassifiers := Some(Set("sources"))
 
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.7.4"
 ThisBuild / majorVersion := 0
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 ThisBuild / semanticdbEnabled := true
@@ -22,7 +22,7 @@ lazy val microservice = Project(appName, file("."))
     // suppress warnings in generated routes files
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
-  .settings(CodeCoverageSettings.settings)
+  .settings(ScoverageSettings())
 
 lazy val it = (project in file("it"))
   .enablePlugins(PlayScala)

@@ -20,8 +20,8 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-import play.api.libs.json._
-import uk.gov.hmrc.apiplatform.modules.common.domain.services.SealedTraitJsonFormatting
+import play.api.libs.json.*
+import uk.gov.hmrc.apiplatform.modules.common.domain.services.SimpleEnumJsonFormatting
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 final case class SoapMessageStatus(
@@ -30,9 +30,10 @@ final case class SoapMessageStatus(
     status: SendingStatus,
     ccnHttpStatus: Int,
     createDateTime: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
-  )
+)
 
 object SoapMessageStatus {
+  implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   val reads: Reads[SoapMessageStatus] = {
 
@@ -43,8 +44,8 @@ object SoapMessageStatus {
         (__ \ "messageId").read[String] and
         (__ \ "status").read[SendingStatus] and
         (__ \ "ccnHttpStatus").read[Int] and
-        (__ \ "createDateTime").read(MongoJavatimeFormats.instantFormat).orElse(Reads.pure(Instant.now()))
-    )(SoapMessageStatus.apply _)
+        (__ \ "createDateTime").read(using MongoJavatimeFormats.instantFormat).orElse(Reads.pure(Instant.now()))
+    )(SoapMessageStatus.apply)
   }
 
   val writes: OWrites[SoapMessageStatus]             = {
@@ -55,8 +56,8 @@ object SoapMessageStatus {
         (__ \ "messageId").write[String] and
         (__ \ "status").write[SendingStatus] and
         (__ \ "ccnHttpStatus").write[Int] and
-        (__ \ "createDateTime").write(MongoJavatimeFormats.instantFormat)
-    )(unlift(SoapMessageStatus.unapply))
+        (__ \ "createDateTime").write[Instant]
+    )(sms => (sms.globalId, sms.messageId, sms.status, sms.ccnHttpStatus, sms.createDateTime))
   }
   implicit val formatter: OFormat[SoapMessageStatus] = OFormat(reads, writes)
 }
@@ -75,7 +76,7 @@ object SendingStatus {
 
   val values: Set[SendingStatus] = Set(SENT, FAILED, RETRYING, ALERTED, COE, COD)
 
-  def apply(text: String): Option[SendingStatus] = SendingStatus.values.find(_.toString() == text.toUpperCase)
+  def apply(text: String): Option[SendingStatus] = SendingStatus.values.find(_.toString == text.toUpperCase)
 
-  implicit val format: Format[SendingStatus] = SealedTraitJsonFormatting.createFormatFor[SendingStatus]("Sending Status", apply)
+  implicit val format: Format[SendingStatus] = SimpleEnumJsonFormatting.createStringFormatFor[SendingStatus]("Sending Status", apply)
 }

@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ccn2connectivitytester.connectors
+package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 
-trait WiremockTestSupport {
+trait ScheduledJob {
+  def name: String
+  def execute(implicit ec: ExecutionContext): Future[Result]
 
-  def setupPostForCCNWithResponseBody(path: String, desiredStatus: Int, desiredResponse: String) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus).withBody(desiredResponse))
-    )
-  }
+  case class Result(message: String)
 
-  def setupPostForCCN(path: String, desiredStatus: Int) = {
-    stubFor(
-      post(urlEqualTo(path))
-        .willReturn(aResponse().withStatus(desiredStatus))
-    )
-  }
+  def configKey: String = name
+
+  def initialDelay: FiniteDuration
+
+  def interval: FiniteDuration
 }

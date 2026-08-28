@@ -20,7 +20,7 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Source
@@ -33,14 +33,12 @@ import play.api.Application
 import play.api.http.Status.BAD_REQUEST
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
-
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
+import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
-class MessageInErrorJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
-    with MockitoSugar with ArgumentMatchersSugar {
+class MessageInErrorJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with ArgumentMatchersSugar {
 
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
@@ -60,8 +58,9 @@ class MessageInErrorJobSpec extends AnyWordSpec with Matchers with GuiceOneAppPe
     "process messages that are in an error state" in new Setup {
       val message = new SoapMessageStatus(UUID.randomUUID(), "some id", SendingStatus.FAILED, BAD_REQUEST)
       when(appConfigMock.parallelism).thenReturn(2)
-      when(appConfigMock.checkJobLockDuration).thenReturn(Duration("5s"))
-      when(appConfigMock.checkInterval).thenReturn(Duration("5s"))
+      when(appConfigMock.scheduledJobEnabled).thenReturn(true)
+      when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(5, SECONDS))
+      when(appConfigMock.checkInterval).thenReturn(FiniteDuration(5, SECONDS))
       when(mongoLockRepository.takeLock(*, *, *)).thenReturn(successful(Some(Lock("", "", Instant.now, Instant.now))))
       when(mongoLockRepository.releaseLock(*, *)).thenReturn(successful(()))
       when(appConfigMock.checkJobLockDuration).thenReturn(FiniteDuration(60, "secs"))
