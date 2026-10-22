@@ -20,9 +20,10 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 @Singleton
 class SendV2SoapMessageJob @Inject() (appConfig: AppConfig, override val mongoLockRepository: MongoLockRepository, outboundService: OutboundService) extends LockedScheduledJob {
