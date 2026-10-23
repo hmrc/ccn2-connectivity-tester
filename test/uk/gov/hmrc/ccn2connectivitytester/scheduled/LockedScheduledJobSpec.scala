@@ -16,17 +16,12 @@
 
 package uk.gov.hmrc.ccn2connectivitytester.scheduled
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
-
-import org.mockito.ArgumentMatchers.{any as `*`, eq as eqTo}
+import org.mockito.ArgumentMatchers.{refEq, any as `*`}
 import org.mockito.Mockito.{never, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
-
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.apiplatform.modules.common.utils.{FixedClock, HmrcSpec}
@@ -34,6 +29,10 @@ import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.common.SuccessResult
 import uk.gov.hmrc.ccn2connectivitytester.services.OutboundService
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 class LockedScheduledJobSpec extends HmrcSpec with ScalaFutures with GuiceOneAppPerTest with BeforeAndAfterEach with FixedClock with MockitoSugar {
 
@@ -64,7 +63,7 @@ class LockedScheduledJobSpec extends HmrcSpec with ScalaFutures with GuiceOneApp
       val result = await(subject.execute)
 
       result.message shouldBe "Job named Scheduled Job sending V2 SOAP messages cannot acquire Mongo lock, not running"
-      verify(mockLockRepository).takeLock(eqTo("Scheduled Job sending V2 SOAP messages-lock"), *, *)
+      verify(mockLockRepository).takeLock(refEq("Scheduled Job sending V2 SOAP messages-lock"), *, *)
       verify(mockOutboundService, never).sendTestMessage()
     }
 
@@ -76,8 +75,8 @@ class LockedScheduledJobSpec extends HmrcSpec with ScalaFutures with GuiceOneApp
       val result = await(subject.execute)
 
       result.message shouldBe "Job named Scheduled Job sending V2 SOAP messages ran and completed with result SuccessResult"
-      verify(mockLockRepository).takeLock(eqTo("Scheduled Job sending V2 SOAP messages-lock"), *, *)
-      verify(mockLockRepository).releaseLock(eqTo("Scheduled Job sending V2 SOAP messages-lock"), *)
+      verify(mockLockRepository).takeLock(refEq("Scheduled Job sending V2 SOAP messages-lock"), *, *)
+      verify(mockLockRepository).releaseLock(refEq("Scheduled Job sending V2 SOAP messages-lock"), *)
     }
   }
 }

@@ -20,10 +20,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.Logging
+import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
+
 import uk.gov.hmrc.ccn2connectivitytester.connectors.OutboundSoapConnector
 import uk.gov.hmrc.ccn2connectivitytester.models.common.*
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.http.{HttpErrorFunctions, UpstreamErrorResponse}
 
 @Singleton
 class OutboundService @Inject() (
