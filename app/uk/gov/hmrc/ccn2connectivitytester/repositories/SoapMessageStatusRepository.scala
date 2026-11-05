@@ -32,10 +32,11 @@ import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result.InsertOneResult
 
 import play.api.Logging
-import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+
+import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 
 @Singleton
 class SoapMessageStatusRepository @Inject() (mongoComponent: MongoComponent, appConfig: AppConfig)(implicit ec: ExecutionContext)

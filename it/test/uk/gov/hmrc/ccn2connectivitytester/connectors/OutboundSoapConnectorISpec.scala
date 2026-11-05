@@ -27,10 +27,11 @@ import play.api.Application
 import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
-import uk.gov.hmrc.ccn2connectivitytester.models.common.Requests
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
+
+import uk.gov.hmrc.ccn2connectivitytester.models.SendingStatus
+import uk.gov.hmrc.ccn2connectivitytester.models.common.Requests
 
 class OutboundSoapConnectorISpec
     extends AnyWordSpec

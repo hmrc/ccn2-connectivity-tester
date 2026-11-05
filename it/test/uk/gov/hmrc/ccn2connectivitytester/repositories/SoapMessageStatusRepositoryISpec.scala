@@ -37,11 +37,12 @@ import play.api.Application
 import play.api.http.Status.{ACCEPTED, FORBIDDEN}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.ccn2connectivitytester.models
-import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.mongo.logging.ObservableFutureImplicits.ObservableFuture
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+
+import uk.gov.hmrc.ccn2connectivitytester.models
+import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 
 class SoapMessageStatusRepositoryISpec
     extends AnyWordSpec

@@ -22,10 +22,11 @@ import scala.concurrent.ExecutionContext
 import play.api.Logging
 import play.api.libs.json.JsValue
 import play.api.mvc.*
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
 import uk.gov.hmrc.ccn2connectivitytester.models.SoapMessageStatus
 import uk.gov.hmrc.ccn2connectivitytester.models.common.*
 import uk.gov.hmrc.ccn2connectivitytester.services.NotificationService
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 @Singleton
 class NotificationController @Inject() (cc: ControllerComponents, notificationService: NotificationService)(implicit ec: ExecutionContext)

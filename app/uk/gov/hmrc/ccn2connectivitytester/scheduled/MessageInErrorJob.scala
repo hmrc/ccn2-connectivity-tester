@@ -24,10 +24,11 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
 
 import play.api.Logging
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
+
 import uk.gov.hmrc.ccn2connectivitytester.config.AppConfig
 import uk.gov.hmrc.ccn2connectivitytester.models.{SendingStatus, SoapMessageStatus}
 import uk.gov.hmrc.ccn2connectivitytester.repositories.SoapMessageStatusRepository
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 @Singleton
 class MessageInErrorJob @Inject() (
